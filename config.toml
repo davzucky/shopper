@@ -1,0 +1,4 @@
+version = "0.1"
+
+S3_bucket_uri = ""
+S3_folder_path = ""

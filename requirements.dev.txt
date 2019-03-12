@@ -1,0 +1,6 @@
+black
+pytest
+pytest-runner
+pytest-flake8
+pytest-mypy
+pytest-html
