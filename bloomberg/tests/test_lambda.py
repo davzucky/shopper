@@ -4,13 +4,15 @@ import os
 from contextlib import contextmanager
 from moto import mock_s3
 
-from ..handler import (
+from bloomberg.aws import (
     download_file_from_S3_to_temp,
     append_ohlc_to_file,
     get_ohcl_row_str,
-    get_bloomberg_ticker_market_data,
-    BloombergFundMarketData,
+)
+from bloomberg.bloomberg import (
     BloombergMarketDataError,
+    BloombergFundMarketData,
+    get_bloomberg_ticker_market_data,
 )
 
 BUCKET = "some-bucket"
@@ -80,7 +82,7 @@ def test_when_ticker_valid_ticker_return_fund_object(requests_mock):
     assert return_value.high == 240.64
     assert return_value.low == 240.64
     assert return_value.close == 240.64
-    assert return_value.date == datetime.datetime(2019, 3, 13).date()
+    assert return_value.date == datetime.date(2019, 3, 13)
 
 
 def test_when_ticker_not_valid_return_unknow(requests_mock):
