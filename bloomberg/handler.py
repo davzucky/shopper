@@ -1,2 +1,6 @@
+import bloomberg
+
+
 def handler(event, context):
-    pass
+
+    bloomberg.get_bloomberg_ticker_market_data()
