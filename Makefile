@@ -10,6 +10,8 @@
 
 OUTPUT_PKG_PATH = ./packages
 
+PYTEST_ARGUMENTS = --flake8 --mypy --mypy-ignore-missing-imports --self-contained-html
+SETUP_CFG_FILE_NAME = setup.cfg
 REQUIREMENTS_FILE_NAME = requirements.txt
 REQUIREMENTS_DEV_FILE_NAME = requirements.dev.txt
 REQUIREMENTS_TESTS_FILE_NAME = requirements.tests.txt
@@ -38,6 +40,7 @@ REQUIREMENTS_TESTS_FILES := $(shell find -name $(REQUIREMENTS_TESTS_FILE_NAME))
 REQUIREMENTS_TESTS_FREEZE_FILES := $(subst  $(REQUIREMENTS_TESTS_FILE_NAME),$(REQUIREMENTS_TESTS_FREEZE_FILE_NAME),$(REQUIREMENTS_TESTS_FILES))
 REQUIREMENTS_PKG_FREEZE_FILES := $(subst  $(REQUIREMENTS_FILE_NAME),$(REQUIREMENTS_PKG_FREEZE_FILE_NAME),$(REQUIREMENTS_FILES))
 PYTESTS_RESULT_FILES := $(subst  $(REQUIREMENTS_FILE_NAME),$(PYTESTS_RESULT_FILE_NAME),$(REQUIREMENTS_FILES))
+SETUP_CFG_FILES := $(subst  $(REQUIREMENTS_FILE_NAME),$(SETUP_CFG_FILE_NAME),$(REQUIREMENTS_FILES))
 FUNCTION_ACTIVATE_PATH = $(subst  $(REQUIREMENTS_FILE_NAME),$(VENV_ACTIVATE_PATH),$(REQUIREMENTS_FILES))
 FUNCTION_PKG_ACTIVATE_PATH = $(subst  $(REQUIREMENTS_FILE_NAME),$(VENV_PKG_ACTIVATE_PATH),$(REQUIREMENTS_FILES))
 VENV_ROOT_PATH = $(subst  /bin/activate,,$(FUNCTION_ACTIVATE_PATH))
@@ -96,19 +99,23 @@ $(REQUIREMENTS_FREEZE_FILE_NAME): $(MASTER_ACTIVATE_PATH) $(REQUIREMENTS_DEV_FIL
 	@source $(subst $(REQUIREMENTS_FREEZE_FILE_NAME),$(VENV_ACTIVATE_PATH), $@) && \
 	 pip freeze > $@
 
+$(SETUP_CFG_FILES): $(SETUP_CFG_FILE_NAME)
+	@echo -e "\e[32m==> Copy $< to $@ \e[0m"
+	@cp $< $@
+
 define Create_Result_File
-$(1): $$(filter $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))%,$$(PROJECT_PYTHON_FILES)) $$(filter $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))%,$$(FUNCTION_ACTIVATE_PATH))
+$(1): $$(filter $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))%,$$(PROJECT_PYTHON_FILES)) $$(filter $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))%,$$(FUNCTION_ACTIVATE_PATH)) $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))$(SETUP_CFG_FILE_NAME)
 	@echo -e "\e[32m==> Test $$@ $$(@D)\e[0m"
 	-@cd $$(@D) &&\
 	 source $(VENV_ACTIVATE_PATH) &&\
-	 pytest --html=$$(@F) --self-contained-html ./tests
+	 pytest --html=$$(@F) $(PYTEST_ARGUMENTS) ./tests
 endef
 $(foreach result_file_path,$(PYTESTS_RESULT_FILES),$(eval $(call Create_Result_File,$(result_file_path))))
 
-$(PYTESTS_RESULT_FILE_NAME): $(MASTER_ACTIVATE_PATH) $(PROJECT_PYTHON_FILES)
+$(PYTESTS_RESULT_FILE_NAME): $(MASTER_ACTIVATE_PATH) $(PROJECT_PYTHON_FILES) $(SETUP_CFG_FILE_NAME)
 	@echo -e "\e[32m==> Test master venv $$@ $$(@D)\e[0m"
 	@source $(MASTER_ACTIVATE_PATH) && \
-	 pytest --html=$@ --self-contained-html .
+	 pytest --html=$@ $(PYTEST_ARGUMENTS) .
 
 
 $(OUTPUT_PKG_PATH)/.touch:
@@ -168,13 +175,13 @@ format-code: $(REQUIREMENTS_FREEZE_FILE_NAME) ## format all the code using black
 	@source $(MASTER_ACTIVATE_PATH) && black .
 
 
-test-local-venv: $(PYTESTS_RESULT_FILES) ## Test all the functions using their local venv
+test-local-venv: $(PYTESTS_RESULT_FILES) ## Test local the functions using their local venv
 	@echo -e "\e[32m==> Test using local venv\e[0m"
 
-test-master-venv: $(PYTESTS_RESULT_FILE_NAME) ## Test all the functions using the master venv
+test-master-venv: $(PYTESTS_RESULT_FILE_NAME) ## Test master the functions using the master venv
 	@echo -e "\e[32m==> Test master venv\e[0m"
 
-test-all-venv: test-local-venv test-master-venv
+test-all-venv: test-local-venv test-master-venv ## Test all the functions using the master venv
 	@echo -e "\e[32m==> Test all venv\e[0m"
 
 print-value:
