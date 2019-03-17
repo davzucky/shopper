@@ -102,3 +102,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# project report files
+**/pytest.report.html
+**/requirements.freeze.tests.txt
+**/requirements.freeze.txt
