@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+#ide idea or vscode
+.vscode/
+.idea/
+
 # Distribution / packaging
 .Python
 build/
@@ -107,3 +111,4 @@ venv.bak/
 **/pytest.report.html
 **/requirements.freeze.tests.txt
 **/requirements.freeze.txt
+
