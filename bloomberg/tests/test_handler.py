@@ -1,9 +1,7 @@
 import pytest
 from typing import Dict, Any
 
-from bloomberg.tests import test_aws
 from .test_aws import do_test_setup, BUCKET, REGION_NAME
-
 from ..handler import AWS_S3_BUCKET, AWS_REGION, handler
 from ..messages.bloomberg import BloombergMessage
 
@@ -18,9 +16,9 @@ def test_when_wrong_ticker_does_not_change_file(
         monkeypatch.setenv(AWS_REGION, REGION_NAME)
 
         ticker = "UNKNOW"
-        from bloomberg.tests import test_aws
 
         from bloomberg.tests import test_bloomberg
+
         test_bloomberg.set_request_mock_unknown_ticker(requests_mock, ticker)
 
         # setup the message
@@ -36,11 +34,17 @@ def test_when_wrong_ticker_does_not_change_file(
                 assert record.levelname == "WARNING"
         assert nb_warning_message == 1
 
-@pytest.mark.parametrize("env_values,env_var_to_error", [
-    ({AWS_S3_BUCKET: "TEST_BUCKET"}, AWS_REGION),
-    ({AWS_REGION: "us-east-1"}, AWS_S3_BUCKET),
-])
-def test_error_and_exit_with_1_(env_values:Dict[str,str], env_var_to_error: str, monkeypatch, caplog):
+
+@pytest.mark.parametrize(
+    "env_values,env_var_to_error",
+    [
+        ({AWS_S3_BUCKET: "TEST_BUCKET"}, AWS_REGION),
+        ({AWS_REGION: "us-east-1"}, AWS_S3_BUCKET),
+    ],
+)
+def test_error_and_exit_with_1_(
+    env_values: Dict[str, str], env_var_to_error: str, monkeypatch, caplog
+):
     for var_name, var_value in env_values.items():
         monkeypatch.setenv(var_name, var_value)
 
@@ -52,9 +56,11 @@ def test_error_and_exit_with_1_(env_values:Dict[str,str], env_var_to_error: str,
     assert pytest_wrapped_e.type == SystemExit
     assert pytest_wrapped_e.value.code == -1
     nb_error_messages = 0
-    expected_message = "The environement variable {} is not set.".format(env_var_to_error)
+    expected_message = "The environement variable {} is not set.".format(
+        env_var_to_error
+    )
     for record in caplog.records:
-        if expected_message in record.message :
+        if expected_message in record.message:
             nb_error_messages += 1
             assert record.levelname == "ERROR"
     assert nb_error_messages == 1
@@ -86,6 +92,7 @@ def test_error_and_exit_with_1_(env_values:Dict[str,str], env_var_to_error: str,
 #                 assert record.levelname == "WARNING"
 #         assert nb_warning_message == 1
 #
+
 
 def get_sample_sqs_message(ticker: str, file_key: str) -> Dict[str, Any]:
     message = BloombergMessage(ticker, file_key)

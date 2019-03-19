@@ -32,17 +32,19 @@ def process_market_data_error(data: BloombergMarketDataError):
 #     pass
 # logger.warning("Error loading data from Bloomberg. {}".format(data.error))
 
-def get_env_variable(env_var_name:str):
-    variable = os.environ.get(env_var_name,"")
+
+def get_env_variable(env_var_name: str):
+    variable = os.environ.get(env_var_name, "")
     if not variable:
         logger.error("The environement variable {} is not set.".format(env_var_name))
         sys.exit(-1)
 
     return variable
 
+
 def handler(event: Dict[str, Any], context: LambdaContext):
-    s3_bucket = get_env_variable(AWS_S3_BUCKET )
-    s3_region = get_env_variable(AWS_REGION)
+    get_env_variable(AWS_S3_BUCKET)
+    get_env_variable(AWS_REGION)
 
     for record in event["Records"]:
         message = get_bloomberg_message(record)
