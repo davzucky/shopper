@@ -11,17 +11,17 @@ from bloomberg.aws import (
     get_ohcl_row_str,
 )
 
+BUCKET = "some-bucket"
+REGION_NAME = "us-east-1"
+KEY = "bloomberg/myticker/1d/data.csv"
+SAMPLE_CONTENT = "date,open,high,low,close\n2018-01-01,100,105,95,102\n"
 
-def set_up_s3():
-    bucket_name = BUCKET
-    region_name = REGION_NAME
-    file_key = KEY
-    body = SAMPLE_CONTENT
 
+def set_up_s3(bucket_name: str, region_name: str, file_key: str, file_content: str):
     conn = boto3.resource("s3", region_name=region_name)
     conn.create_bucket(Bucket=bucket_name)
     boto3.client("s3", region_name=region_name).put_object(
-        Bucket=bucket_name, Key=file_key, Body=body
+        Bucket=bucket_name, Key=file_key, Body=file_content
     )
 
 
@@ -76,13 +76,12 @@ def test_can_save_and_retrive_file_from_s3():
 
 
 @contextmanager
-def do_test_setup():
+def do_test_setup(
+    bucket_name: str = BUCKET,
+    region_name: str = REGION_NAME,
+    file_key: str = KEY,
+    file_content: str = SAMPLE_CONTENT,
+):
     with mock_s3():
-        set_up_s3()
+        set_up_s3(bucket_name, region_name, file_key, file_content)
         yield
-
-
-BUCKET = "some-bucket"
-REGION_NAME = "us-east-1"
-KEY = "bloomberg/myticker/1d/data.csv"
-SAMPLE_CONTENT = "date,open,high,low,close\n2018-01-01,100,105,95,102\n"

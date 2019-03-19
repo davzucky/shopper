@@ -76,7 +76,7 @@ def get_bloomberg_ticker_market_data(
             json_response.get("price", 0),
             json_response.get("price", 0),
             json_response.get("price", 0),
-            200,
+            response.status_code,
             json_response.get("id", UNKNOWN_VALUE),
             json_response.get("fundType", UNKNOWN_VALUE),
             json_response.get("fundObjective", UNKNOWN_VALUE),
