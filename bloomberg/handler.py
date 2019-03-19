@@ -1,3 +1,7 @@
+import sys
+
+import os
+
 import logging
 from aws_xray_sdk.core.lambda_launcher import LambdaContext
 from typing import Dict, Any
@@ -28,10 +32,17 @@ def process_market_data_error(data: BloombergMarketDataError):
 #     pass
 # logger.warning("Error loading data from Bloomberg. {}".format(data.error))
 
+def get_env_variable(env_var_name:str):
+    variable = os.environ.get(env_var_name,"")
+    if not variable:
+        logger.error("The environement variable {} is not set.".format(env_var_name))
+        sys.exit(-1)
+
+    return variable
 
 def handler(event: Dict[str, Any], context: LambdaContext):
-    # s3_bucket = os.environ["aws_s3_bucket"]
-    # s3_region = os.environ["aws_region"]
+    s3_bucket = get_env_variable(AWS_S3_BUCKET )
+    s3_region = get_env_variable(AWS_REGION)
 
     for record in event["Records"]:
         message = get_bloomberg_message(record)

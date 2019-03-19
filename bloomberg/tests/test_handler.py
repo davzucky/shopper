@@ -1,3 +1,4 @@
+import pytest
 from typing import Dict, Any
 
 from bloomberg.tests import test_aws
@@ -34,6 +35,30 @@ def test_when_wrong_ticker_does_not_change_file(
                 nb_warning_message += 1
                 assert record.levelname == "WARNING"
         assert nb_warning_message == 1
+
+@pytest.mark.parametrize("env_values,env_var_to_error", [
+    ({AWS_S3_BUCKET: "TEST_BUCKET"}, AWS_REGION),
+    ({AWS_REGION: "us-east-1"}, AWS_S3_BUCKET),
+])
+def test_error_and_exit_with_1_(env_values:Dict[str,str], env_var_to_error: str, monkeypatch, caplog):
+    for var_name, var_value in env_values.items():
+        monkeypatch.setenv(var_name, var_value)
+
+    with pytest.raises(SystemExit) as pytest_wrapped_e:
+        ticker = "UNKNOW"
+        # setup the message
+        sqs_message = get_sample_sqs_message(ticker, "/marketdata/test/1d/data.csv")
+        handler(sqs_message, None)
+    assert pytest_wrapped_e.type == SystemExit
+    assert pytest_wrapped_e.value.code == -1
+    nb_error_messages = 0
+    expected_message = "The environement variable {} is not set.".format(env_var_to_error)
+    for record in caplog.records:
+        if expected_message in record.message :
+            nb_error_messages += 1
+            assert record.levelname == "ERROR"
+    assert nb_error_messages == 1
+
 
 #
 # def test_when_right_ticker_update_s3_file_that_exist_add_new_row(
