@@ -104,7 +104,11 @@ $(SETUP_CFG_FILES): $(SETUP_CFG_FILE_NAME)
 	@cp $< $@
 
 define Create_Result_File
-$(1): $$(filter $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))%,$$(PROJECT_PYTHON_FILES)) $$(filter $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))%,$$(FUNCTION_ACTIVATE_PATH)) $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))$(SETUP_CFG_FILE_NAME)
+$(1): $$(filter $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))%,$$(PROJECT_PYTHON_FILES)) \
+	$$(filter $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))%,$$(FUNCTION_ACTIVATE_PATH)) \
+	$$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))$(SETUP_CFG_FILE_NAME) \
+	$$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))$(REQUIREMENTS_FREEZE_FILE_NAME) \
+	$$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))$(REQUIREMENTS_TESTS_FREEZE_FILE_NAME)
 	@echo -e "\e[32m==> Test $$@ $$(@D)\e[0m"
 	-@cd $$(@D) &&\
 	 source $(VENV_ACTIVATE_PATH) &&\
