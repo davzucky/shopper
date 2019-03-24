@@ -59,7 +59,34 @@ def test_add_ohlc_data_to_file(tmpdir):
         file_content = open(tmp_path, "r").read()
         new_row_str = get_ohcl_row_str(date, open_price, high, low, close)
 
-        assert file_content == "{}{}\n".format(SAMPLE_CONTENT, new_row_str)
+        assert file_content == "{}{}".format(SAMPLE_CONTENT, new_row_str)
+
+
+def test_if_date_already_exist_override_with_latest(tmpdir):
+    file_name = "ticker.csv"
+    file_path = os.path.join(tmpdir.dirname, file_name)
+    with open(file_path, mode="w+") as f_ticker:
+        f_ticker.write(SAMPLE_CONTENT)
+
+    date = datetime.datetime(2018, 1, 2)
+    open_price = 102.0
+    high = 107.0
+    low = 100.0
+    close = 106.0
+
+    append_ohlc_to_file(date, open_price, high, low, close, file_path)
+
+    open_price = 102.0
+    high = 109.0
+    low = 100.0
+    close = 107.0
+
+    append_ohlc_to_file(date, open_price, high, low, close, file_path)
+
+    file_content = open(file_path, "r").read()
+    new_row_str = get_ohcl_row_str(date, open_price, high, low, close)
+
+    assert file_content == "{}{}".format(SAMPLE_CONTENT, new_row_str)
 
 
 def test_can_save_and_retrive_file_from_s3():

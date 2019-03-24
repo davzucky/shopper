@@ -1,8 +1,7 @@
 import sys
-
 import os
-
 import logging
+
 from aws_xray_sdk.core.lambda_launcher import LambdaContext
 from typing import Dict, Any
 

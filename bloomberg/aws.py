@@ -1,6 +1,7 @@
-import datetime
+import itertools
 
 import boto3
+import datetime
 from botocore.exceptions import ClientError
 
 
@@ -19,14 +20,26 @@ def download_file_from_S3_to_temp(region_name, bucket_name, file_key, tmp_path) 
 def append_ohlc_to_file(
     date: datetime.datetime, o: float, h: float, l: float, c: float, tmp_path: str
 ) -> None:
-    with open(tmp_path, mode="a+") as f:
-        f.write("{}\n".format(get_ohcl_row_str(date, o, h, l, c)))
+
+    with open(tmp_path, mode="r") as f_read:
+        lines = f_read.readlines()
+
+    formatted_date = get_date_formatted(date)
+    with open(tmp_path, mode="w+") as f_write:
+        f_write.writelines(
+            itertools.filterfalse(lambda l: l.startswith(formatted_date), lines)
+        )
+        f_write.write(get_ohcl_row_str(date, o, h, l, c))
+
+
+def get_date_formatted(date: datetime.datetime) -> str:
+    return "{: % Y - % M - % D}".format(date)
 
 
 def get_ohcl_row_str(
     date: datetime.datetime, o: float, h: float, l: float, c: float
 ) -> str:
-    return "{:%Y-%M-%D},{:.6f},{:.6f},{:.6f},{:.6f}".format(date, o, h, l, c)
+    return "{},{:.6f},{:.6f},{:.6f},{:.6f}".format(get_date_formatted(date), o, h, l, c)
 
 
 def upload_file_from_local_to_S3(region_name, bucket_name, file_key, tmp_path) -> None:
