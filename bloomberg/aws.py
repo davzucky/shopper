@@ -18,7 +18,7 @@ def download_file_from_S3_to_temp(region_name, bucket_name, file_key, tmp_path) 
 
 
 def append_ohlc_to_file(
-    date: datetime.datetime, o: float, h: float, l: float, c: float, tmp_path: str
+    date: datetime.date, o: float, h: float, l: float, c: float, tmp_path: str
 ) -> None:
 
     with open(tmp_path, mode="r") as f_read:
@@ -32,12 +32,12 @@ def append_ohlc_to_file(
         f_write.write(get_ohcl_row_str(date, o, h, l, c))
 
 
-def get_date_formatted(date: datetime.datetime) -> str:
-    return "{: % Y - % M - % D}".format(date)
+def get_date_formatted(date: datetime.date) -> str:
+    return "{:%Y-%m-%d}".format(date)
 
 
 def get_ohcl_row_str(
-    date: datetime.datetime, o: float, h: float, l: float, c: float
+    date: datetime.date, o: float, h: float, l: float, c: float
 ) -> str:
     return "{},{:.6f},{:.6f},{:.6f},{:.6f}".format(get_date_formatted(date), o, h, l, c)
 

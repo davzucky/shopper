@@ -39,7 +39,7 @@ class BloombergFundMarketData(BloombergMarketData, MarketOHLC):
     totalReturn1Year: float
     totalReturnYtd: float
     name: str
-    price: str
+    price: float
     issuedCurrency: str
     priceChange1Day: float
     percentChange1Day: float

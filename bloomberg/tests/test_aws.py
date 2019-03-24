@@ -57,7 +57,7 @@ def test_add_ohlc_data_to_file(tmpdir):
         append_ohlc_to_file(date, open_price, high, low, close, tmp_path)
 
         file_content = open(tmp_path, "r").read()
-        new_row_str = get_ohcl_row_str(date, open_price, high, low, close)
+        new_row_str = "2018-01-02,102.000000,107.000000,100.000000,106.000000"
 
         assert file_content == "{}{}".format(SAMPLE_CONTENT, new_row_str)
 

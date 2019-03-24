@@ -1,11 +1,9 @@
-import datetime
-
+from datetime import datetime, date, time
 from bloomberg.bloomberg import (
     get_bloomberg_ticker_market_data,
     BloombergFundMarketData,
     BloombergMarketDataError,
 )
-
 
 UNKNOWN_SAMPLE_DATA = {"securityType": "UNKNOWN"}
 FUND_SAMPLE_DATA = {
@@ -40,9 +38,14 @@ def set_request_mock_unknown_ticker(requests_mock, ticker: str):
     )
 
 
-def set_request_mock_valid_data(requests_mock, ticker: str):
+def set_request_mock_valid_data(
+    requests_mock, ticker: str, price: float, date: datetime
+):
     fund_data = FUND_SAMPLE_DATA.copy()
     fund_data["id"] = ticker
+    fund_data["price"] = price
+    fund_data["lastUpdateEpoch"] = date.timestamp()
+
     requests_mock.register_uri(
         "GET",
         "https://www.bloomberg.com/markets/api/security/basic/{}".format(ticker),
@@ -53,17 +56,21 @@ def set_request_mock_valid_data(requests_mock, ticker: str):
 
 def test_when_ticker_valid_ticker_return_fund_object(requests_mock):
     ticker = "JPMPCAA:HK"
-    set_request_mock_valid_data(requests_mock, ticker)
+    price = 240.64
+    price_date = date(2019, 3, 12)
+    set_request_mock_valid_data(
+        requests_mock, ticker, price, datetime.combine(price_date, time(6, 0, 0))
+    )
 
     return_value = get_bloomberg_ticker_market_data(ticker)
     assert type(return_value) == BloombergFundMarketData
     assert return_value.status_code == 200
-    assert return_value.price == 240.64
-    assert return_value.open == 240.64
-    assert return_value.high == 240.64
-    assert return_value.low == 240.64
-    assert return_value.close == 240.64
-    assert return_value.date == datetime.date(2019, 3, 13)
+    assert return_value.price == price
+    assert return_value.open == price
+    assert return_value.high == price
+    assert return_value.low == price
+    assert return_value.close == price
+    assert return_value.date == price_date
 
 
 def test_when_ticker_not_valid_return_unknow(requests_mock):

@@ -1,7 +1,12 @@
+import os
+
 import pytest
+from datetime import datetime, date, time
 from typing import Dict, Any
 
-from .test_aws import do_test_setup, BUCKET, REGION_NAME
+from ..aws import download_file_from_S3_to_temp, get_ohcl_row_str
+from .test_bloomberg import set_request_mock_valid_data
+from .test_aws import do_test_setup, BUCKET, REGION_NAME, SAMPLE_CONTENT
 from ..handler import AWS_S3_BUCKET, AWS_REGION, handler
 from ..messages.bloomberg import BloombergMessage
 
@@ -66,32 +71,39 @@ def test_error_and_exit_with_1_(
     assert nb_error_messages == 1
 
 
-#
-# def test_when_right_ticker_update_s3_file_that_exist_add_new_row(
-#     tmpdir, monkeypatch, requests_mock, caplog
-# ):
-#     # Setup the file in S3
-#     with do_test_setup():
-#         # Setup the required env variable
-#         monkeypatch.setenv(AWS_S3_BUCKET, BUCKET)
-#         monkeypatch.setenv(AWS_REGION, REGION_NAME)
-#
-#         ticker = "JPMPCAA:HK"
-#         test_aws.set_request_mock_valid_data(requests_mock, ticker)
-#
-#         # setup the message
-#         sqs_message = get_sample_sqs_message(ticker, "/marketdata/test/1d/data.csv")
-#         handler(sqs_message, None)
-#
-#         # Check that the message "Error loading data from Bloomberg" is
-#         # warning level and see 1
-#         nb_warning_message = 0
-#         for record in caplog.records:
-#             if record.message.startswith("Error loading data from Bloomberg"):
-#                 nb_warning_message += 1
-#                 assert record.levelname == "WARNING"
-#         assert nb_warning_message == 1
-#
+def test_handler_update_s3_file_that_exist_add_new_row(
+    tmpdir, monkeypatch, requests_mock, caplog
+):
+    bucket_name = "another_bucket"
+    region_name = "us-east-1"
+    file_key = "/marketdata/test/1d/data.csv"
+    file_content = SAMPLE_CONTENT
+    ticker = "JPMPCAA:HK"
+    price = 213.5
+    price_date = date(2019, 1, 4)
+    tmp_file_name = "file_to_check.csv"
+
+    # Setup the file in S3
+    with do_test_setup(bucket_name, region_name, file_key, file_content):
+        # Setup the required env variable
+        monkeypatch.setenv(AWS_S3_BUCKET, bucket_name)
+        monkeypatch.setenv(AWS_REGION, region_name)
+
+        set_request_mock_valid_data(
+            requests_mock, ticker, price, datetime.combine(price_date, time(6, 0, 0))
+        )
+
+        # setup the message
+        sqs_message = get_sample_sqs_message(ticker, file_key)
+        handler(sqs_message, None)
+
+        tmp_path = os.path.join(tmpdir.dirname, tmp_file_name)
+        download_file_from_S3_to_temp(region_name, bucket_name, file_key, tmp_path)
+
+        new_file_content = open(tmp_path, "r").read()
+        new_row_str = get_ohcl_row_str(price_date, price, price, price, price)
+
+        assert new_file_content == "{}{}".format(file_content, new_row_str)
 
 
 def get_sample_sqs_message(ticker: str, file_key: str) -> Dict[str, Any]:
