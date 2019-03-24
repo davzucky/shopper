@@ -112,3 +112,4 @@ venv.bak/
 **/requirements.freeze.tests.txt
 **/requirements.freeze.txt
 
+/requirements.functions.txt

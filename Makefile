@@ -18,6 +18,7 @@ REQUIREMENTS_TESTS_FILE_NAME = requirements.tests.txt
 REQUIREMENTS_FREEZE_FILE_NAME = $(subst requirements,requirements.freeze,$(REQUIREMENTS_FILE_NAME))
 REQUIREMENTS_TESTS_FREEZE_FILE_NAME = $(subst requirements,requirements.freeze,$(REQUIREMENTS_TESTS_FILE_NAME))
 REQUIREMENTS_PKG_FREEZE_FILE_NAME = $(subst requirements,requirements.pkg.freeze,$(REQUIREMENTS_FILE_NAME))
+FUNCTIONS_REQUIREMENTS = requirements.functions.txt
 GIT_HASH_COMMIT = $(shell git rev-parse --short HEAD)
 CONFIG_VERSION = $(shell grep -r version config.toml | awk -F '"' '{print $$2}')
 VERSION = $(CONFIG_VERSION).$(GIT_HASH_COMMIT)
@@ -51,13 +52,28 @@ PROJECT_PYTHON_FILES = $(shell find . -type d \( $(DIRECTORY_EXCLUSION) \) -prun
 
 MASTER_ACTIVATE_PATH = $(VENV_ACTIVATE_PATH)
 
-$(MASTER_ACTIVATE_PATH) $(FUNCTION_ACTIVATE_PATH):
+$(FUNCTIONS_REQUIREMENTS): $(REQUIREMENTS_FILES) $(REQUIREMENTS_TESTS_FILES)
+	@echo -e "\e[32m==> Create file $@ \e[0m"
+	@rm $@ -f
+	@echo $(patsubst %,-r %,$(REQUIREMENTS_FILES)) > $@
+	@echo $(patsubst %,-r %,$(REQUIREMENTS_TESTS_FILES)) >> $@
+
+$(FUNCTION_ACTIVATE_PATH):
+	@echo -e "\e[32m==> Create virtual env $@\e[0m"
+	@virtualenv $(subst /bin/activate,, $@)
+	@source $@ && pip install --upgrade pip
+	@echo -e "\e[32m====> touch $@\e[0m"
+	@touch $@ # touch activate file to be sure make record it
+
+$(MASTER_ACTIVATE_PATH) : $(FUNCTIONS_REQUIREMENTS) $(REQUIREMENTS_DEV_FILE_NAME)
 	@echo -e "\e[32m==> Create virtual env $@\e[0m"
 	@virtualenv $(subst /bin/activate,, $@)
 	@source $@ && pip install --upgrade pip
 	@source $@ && pip install -r $(REQUIREMENTS_DEV_FILE_NAME)
+	@source $@ && pip install -r $(FUNCTIONS_REQUIREMENTS)
 	@echo -e "\e[32m====> touch $@\e[0m"
 	@touch $@ # touch activate file to be sure make record it
+
 
 $(FUNCTION_PKG_ACTIVATE_PATH):
 	@echo -e "\e[32m==> Create virtual env $@\e[0m"
@@ -81,10 +97,15 @@ $(REQUIREMENTS_FREEZE_FILES): %$(REQUIREMENTS_FREEZE_FILE_NAME): %$(REQUIREMENTS
 	@source $(subst $(REQUIREMENTS_FREEZE_FILE_NAME),$(VENV_ACTIVATE_PATH), $@) && \
 	 pip freeze > $@
 
-$(REQUIREMENTS_TESTS_FREEZE_FILES): %$(REQUIREMENTS_TESTS_FREEZE_FILE_NAME): %$(REQUIREMENTS_TESTS_FILE_NAME) %$(VENV_ACTIVATE_PATH)
+$(REQUIREMENTS_TESTS_FREEZE_FILES): %$(REQUIREMENTS_TESTS_FREEZE_FILE_NAME): %$(REQUIREMENTS_TESTS_FILE_NAME) %$(VENV_ACTIVATE_PATH) %$(REQUIREMENTS_FREEZE_FILE_NAME)
 	@echo -e "\e[32m==> Install pip requirement from $@\e[0m"
+	@echo -e "\e[32m====> Install pip requirement file $<\e[0m"
 	@source $(subst $(REQUIREMENTS_TESTS_FREEZE_FILE_NAME),$(VENV_ACTIVATE_PATH), $@) && \
 	 pip install -r $<
+	@echo -e "\e[32m====> Install pip requirement file $(REQUIREMENTS_DEV_FILE_NAME) \e[0m"
+	@source $(subst $(REQUIREMENTS_TESTS_FREEZE_FILE_NAME),$(VENV_ACTIVATE_PATH), $@) && \
+	 pip install -r $(REQUIREMENTS_DEV_FILE_NAME)
+	@echo -e "\e[32m====> Create freeze file $@ e[0m"
 	@source $(subst $(REQUIREMENTS_TESTS_FREEZE_FILE_NAME),$(VENV_ACTIVATE_PATH), $@) && \
 	 pip freeze > $@
 
@@ -153,7 +174,11 @@ create-master-venv: $(REQUIREMENTS_FREEZE_FILE_NAME) ## Create master venv
 create-all-venv: create-master-venv create-local-venv ## Create all function environment and a master venv
 	@echo -e "\e[32m==> Create all venv\e[0m"
 
-clean: ## Clean all build file created
+clean-pytest-result:
+	@echo -e "\e[32m==> Remove pytest.result.html\e[0m"
+	@rm $(PYTESTS_RESULT_FILE_NAME) $(PYTESTS_RESULT_FILES) -f
+
+clean: clean-pytest-result## Clean all build file created
 	@echo -e "\e[32m==> Clean working directory\e[0m"
 
 	@echo -e "\e[32m====> Remove master .venv \e[0m"
@@ -168,11 +193,12 @@ clean: ## Clean all build file created
 	@echo -e "\e[32m====> Remove freeze files\e[0m"
 	@rm $(REQUIREMENTS_FREEZE_FILE_NAME) $(REQUIREMENTS_PKG_FREEZE_FILES) $(REQUIREMENTS_FREEZE_FILES) $(REQUIREMENTS_TESTS_FREEZE_FILES) -f
 
-	@echo -e "\e[32m====> Remove pytest.result.html\e[0m"
-	@rm $(PYTESTS_RESULT_FILE_NAME) $(PYTESTS_RESULT_FILES) -f
-
 	@echo -e "\e[32m====> Remove output path folder $(OUTPUT_PKG_PATH)\e[0m"
 	@rm $(OUTPUT_PKG_PATH) -rf
+
+	@echo -e "\e[32m====> Remove output path folder $(FUNCTIONS_REQUIREMENTS)\e[0m"
+	@rm $(FUNCTIONS_REQUIREMENTS) -f
+
 
 format-code: $(REQUIREMENTS_FREEZE_FILE_NAME) ## format all the code using black
 	@echo -e "\e[32m==> Reformat code using black\e[0m"
