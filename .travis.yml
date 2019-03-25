@@ -4,8 +4,9 @@ sudo: false
 python:
   - "3.7"
 env:
-  - AWS_SECRET_ACCESS_KEY="This_is_a_key"
-  - AWS_ACCESS_KEY_ID="This_is_an_Id"
+  global:
+    - AWS_SECRET_ACCESS_KEY="This_is_a_key"
+    - AWS_ACCESS_KEY_ID="This_is_an_Id"
 # command to install dependencies
 install:
   - pip install virtualenv
