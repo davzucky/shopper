@@ -133,7 +133,7 @@ $(1): $$(filter $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))%,$$(PROJECT_PYTHON_
 	$$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))$(REQUIREMENTS_FREEZE_FILE_NAME) \
 	$$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))$(REQUIREMENTS_TESTS_FREEZE_FILE_NAME)
 	@echo -e "\e[32m==> Test $$@ $$(@D)\e[0m"
-	-@cd $$(@D) &&\
+	@cd $$(@D) &&\
 	 source $(VENV_ACTIVATE_PATH) &&\
 	 pytest --html=$$(@F) $(PYTEST_ARGUMENTS) ./tests
 endef
@@ -176,11 +176,11 @@ create-master-venv: $(REQUIREMENTS_FREEZE_FILE_NAME) ## Create master venv
 create-all-venv: create-master-venv create-local-venv ## Create all function environment and a master venv
 	@echo -e "\e[32m==> Create all venv\e[0m"
 
-clean-pytest-result:
+clean-pytest-result: ## Clean pytest result to force retest.
 	@echo -e "\e[32m==> Remove pytest.result.html\e[0m"
 	@rm $(PYTESTS_RESULT_FILE_NAME) $(PYTESTS_RESULT_FILES) -f
 
-clean: clean-pytest-result## Clean all build file created
+clean: clean-pytest-result ## Clean all build file created
 	@echo -e "\e[32m==> Clean working directory\e[0m"
 
 	@echo -e "\e[32m====> Remove master .venv \e[0m"
