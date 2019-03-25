@@ -1,10 +1,11 @@
 language: python
 dist: xenial
+sudo: false
 python:
   - "3.7"
 # command to install dependencies
 install:
-  - pip install virtualenv google-compute-engine
+  - pip install virtualenv
   - make --trace create-local-venv
 # command to run tests
 script:
