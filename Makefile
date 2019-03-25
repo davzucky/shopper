@@ -7,6 +7,8 @@
 .PHONY: help clean create-master-venv test-master-venv reformat-code create-packages
 
 .DEFAULT_GOAL := help
+# Force shell to be bash
+SHELL := /bin/bash
 
 OUTPUT_PKG_PATH = ./packages
 
