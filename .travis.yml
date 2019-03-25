@@ -8,10 +8,11 @@ env:
     - AWS_SECRET_ACCESS_KEY="This_is_a_key"
     - AWS_ACCESS_KEY_ID="This_is_an_Id"
     - BOTO_CONFIG=/dev/null
+
 # command to install dependencies
 install:
-  - pip install virtualenv
-  - make --trace create-local-venv
+  - make create-local-venv
+
 # command to run tests
 script:
-  - make --trace test-local-venv
+  - make test-local-venv
