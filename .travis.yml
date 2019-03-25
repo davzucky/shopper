@@ -4,7 +4,7 @@ python:
   - "3.7"
 # command to install dependencies
 install:
-  - pip install virtualenv
+  - pip install virtualenv google-compute-engine
   - make --trace create-local-venv
 # command to run tests
 script:
