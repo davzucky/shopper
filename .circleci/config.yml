@@ -4,7 +4,7 @@ executors:
   lambda-executor:
     docker:
       - image: circleci/python:3.7.2
-    working_directory: ~/repo
+    working_directory: /tmp
 
 jobs:
   create-venv:
@@ -15,9 +15,15 @@ jobs:
           name: install dependencies
           command: make create-all-venv
 
+      - persist_to_workspace:
+          root: /tmp
+
   test:
     executor: lambda-executor
     steps:
+      - - attach_workspace:
+            at: /tmp
+            
       - run:
           name: run tests
           command: make test-all-venv
