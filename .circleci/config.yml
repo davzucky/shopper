@@ -15,16 +15,16 @@ jobs:
           name: install dependencies
           command: make create-all-venv
 
-#      - persist_to_workspace:
-#          root: ~
-#          paths:
-#            - .
+      - persist_to_workspace:
+          root: ~
+          paths:
+            - .
 
   test:
     executor: lambda-executor
     steps:
-#      - attach_workspace:
-#          at: ~
+      - attach_workspace:
+          at: ~
 
       - run:
           name: run tests
