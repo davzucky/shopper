@@ -21,9 +21,9 @@ jobs:
   test:
     executor: lambda-executor
     steps:
-      - - attach_workspace:
-            at: /tmp
-            
+      - attach_workspace:
+          at: /tmp
+
       - run:
           name: run tests
           command: make test-all-venv
