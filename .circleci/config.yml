@@ -33,6 +33,6 @@ workflows:
   build-test:
     jobs:
       - create-venv
-      - test
+      - test:
           requires:
             - create
