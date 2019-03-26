@@ -4,27 +4,21 @@ jobs:
   build:
     docker:
       - image: circleci/python:3.7.2
-#    working_directory: ~/repo
-
+    working_directory: ~/repo
     steps:
 #      - checkout
       - run:
           name: install dependencies
-          command: |
-            make create-all-venv
+          command: make create-all-venv
 
   test:
     docker:
       - image: circleci/python:3.7.2
-#    working_directory: ~/repo
-
+    working_directory: ~/repo
     steps:
       - run:
           name: run tests
-          command: |
-            make test-all-venv
-#            . venv/bin/activate
-#            python manage.py test
+          command: make test-all-venv
           environment:
             AWS_SECRET_ACCESS_KEY: "This_is_a_key"
             AWS_ACCESS_KEY_ID: "This_is_an_Id"
