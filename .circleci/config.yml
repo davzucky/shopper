@@ -35,4 +35,4 @@ workflows:
       - create-venv
       - test:
           requires:
-            - create
+            - create-venv
