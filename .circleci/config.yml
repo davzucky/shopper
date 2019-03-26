@@ -17,6 +17,8 @@ jobs:
 
       - persist_to_workspace:
           root: /tmp
+          paths:
+            - .
 
   test:
     executor: lambda-executor
