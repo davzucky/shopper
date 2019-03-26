@@ -1,2 +1,2 @@
-boto3
-dataclasses-json
+boto3==1.9.121
+dataclasses-json==0.2.2

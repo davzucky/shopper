@@ -1,6 +1,6 @@
-black
-pytest
-pytest-runner
-pytest-flake8
-pytest-mypy
-pytest-html
+black==19.3b0
+pytest==4.3.1
+pytest-runner==4.4
+pytest-flake8==1.0.4
+pytest-mypy==0.3.2
+pytest-html==1.20.0
