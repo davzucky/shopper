@@ -1,10 +1,14 @@
 
 version: 2.1
-jobs:
-  create-venv:
+executors:
+  lambda-executor:
     docker:
       - image: circleci/python:3.7.2
     working_directory: ~/repo
+
+jobs:
+  create-venv:
+    executor: lambda-executor
     steps:
       - checkout
       - run:
@@ -12,9 +16,7 @@ jobs:
           command: make create-all-venv
 
   test:
-    docker:
-      - image: circleci/python:3.7.2
-    working_directory: ~/repo
+    executor: lambda-executor
     steps:
       - run:
           name: run tests
