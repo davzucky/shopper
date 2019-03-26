@@ -51,6 +51,10 @@ jobs:
             make test-all-venv
 #            . venv/bin/activate
 #            python manage.py test
+      -   environment:
+            - AWS_SECRET_ACCESS_KEY: This_is_a_key"
+            - AWS_ACCESS_KEY_ID: "This_is_an_Id"
+            - BOTO_CONFIG: /dev/null
 
       - store_artifacts:
           path: pytest.report.html
