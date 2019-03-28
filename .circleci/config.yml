@@ -4,7 +4,7 @@ executors:
   lambda-executor:
     docker:
       - image: circleci/python:3.7.2
-    working_directory: /tmp
+#    working_directory: /tmp
 
 jobs:
   test-local-venv:
@@ -42,6 +42,7 @@ jobs:
   push-lambda-packages-to-s3:
     executor: lambda-executor
     steps:
+        - checkout
         - attach_workspace:
             at: /tmp/packages
         - run:
