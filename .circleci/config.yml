@@ -38,17 +38,19 @@ jobs:
           root: packages
           # Must be relative path from root
           paths:
-            - packages
+            - .
+
+
   push-lambda-packages-to-s3:
     executor: lambda-executor
     steps:
         - checkout
         - attach_workspace:
-            at: /tmp/packages
+            at: packages
         - run:
             name: Check package content
             command: |
-              ls /tmp/packages
+              ls packages
 
 workflows:
   version: 2
