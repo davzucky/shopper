@@ -4,31 +4,19 @@ executors:
   lambda-executor:
     docker:
       - image: circleci/python:3.7.2
-    working_directory: ~
+#    working_directory: ~
 
 jobs:
-  create-venv:
-    executor: lambda-executor
+  test-local-venv:
+#    executor: lambda-executor
+    docker:
+      - image: circleci/python:3.7.2
     steps:
       - checkout
       - run:
-          name: install dependencies
-          command: make create-all-venv
-
-      - persist_to_workspace:
-          root: ~
-          paths:
-            - .
-
-  test:
-    executor: lambda-executor
-    steps:
-      - attach_workspace:
-          at: ~
-
-      - run:
-          name: run tests
-          command: make test-all-venv
+          name: run tests local venv
+          command: |
+            make test-local-venv
           environment:
             AWS_SECRET_ACCESS_KEY: "This_is_a_key"
             AWS_ACCESS_KEY_ID: "This_is_an_Id"
@@ -40,9 +28,6 @@ jobs:
 
 workflows:
   version: 2
-  build-test:
+  test local venv:
     jobs:
-      - create-venv
-      - test:
-          requires:
-            - create-venv
+      - test-local-venv
