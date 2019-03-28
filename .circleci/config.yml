@@ -4,13 +4,13 @@ executors:
   lambda-executor:
     docker:
       - image: circleci/python:3.7.2
-#    working_directory: ~
+    working_directory: /tmp
 
 jobs:
   test-local-venv:
-#    executor: lambda-executor
-    docker:
-      - image: circleci/python:3.7.2
+    executor: lambda-executor
+#    docker:
+#      - image: circleci/python:3.7.2
     steps:
       - checkout
       - run:
@@ -26,8 +26,37 @@ jobs:
           path: pytest.report.html
           destination: pytest.report.html
 
+  build-lambda-packages:
+    executor: lambda-executor
+    steps:
+      - checkout
+      - run:
+          name: build lambda packages
+          command: |
+            make create-packages
+      - persist_to_workspace:
+          root: packages
+          # Must be relative path from root
+          paths:
+            - packages
+  push-lambda-packages-to-s3:
+    executor: lambda-executor
+    steps:
+        - attach_workspace:
+            at: /tmp/packages
+        - run:
+            name: Check package content
+            command: |
+              ls /tmp/packages
+
 workflows:
   version: 2
   test local venv:
     jobs:
       - test-local-venv
+      - build-lambda-packages:
+          requires:
+            - test-local-venv
+      - push-lambda-packages-to-s3:
+          requires:
+            - build-lambda-packages
