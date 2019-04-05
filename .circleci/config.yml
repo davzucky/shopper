@@ -50,7 +50,7 @@ jobs:
         - run:
             name: Check package content
             command: |
-              ls packages
+              make --trace publish-packages-to-s3
 
 workflows:
   version: 2
