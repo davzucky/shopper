@@ -10,23 +10,34 @@
 # Force shell to be bash
 SHELL := /bin/bash
 
-OUTPUT_PKG_PATH = ./packages
+PACKAGE_FOLDER_NAME = packages
+OUTPUT_PKG_PATH = ./$(PACKAGE_FOLDER_NAME)
+OUTPUT_TEST_RESULT_PATH = ./test_reports
+VENV_TEST_FOLDER_NAME = .venv
+VENV_PKG_FOLDER_NAME = .venv_pkg
+VENV_AWS_CLI_FOLDER_NAME = .venv_aws
 
 PYTEST_ARGUMENTS = --flake8 --mypy --mypy-ignore-missing-imports --self-contained-html
 SETUP_CFG_FILE_NAME = setup.cfg
 REQUIREMENTS_FILE_NAME = requirements.txt
 REQUIREMENTS_DEV_FILE_NAME = requirements.dev.txt
 REQUIREMENTS_TESTS_FILE_NAME = requirements.tests.txt
+REQUIREMENTS_AWS_CLI_FILE_NAME = requirements.awscli.txt
 REQUIREMENTS_FREEZE_FILE_NAME = $(subst requirements,requirements.freeze,$(REQUIREMENTS_FILE_NAME))
 REQUIREMENTS_TESTS_FREEZE_FILE_NAME = $(subst requirements,requirements.freeze,$(REQUIREMENTS_TESTS_FILE_NAME))
 REQUIREMENTS_PKG_FREEZE_FILE_NAME = $(subst requirements,requirements.pkg.freeze,$(REQUIREMENTS_FILE_NAME))
+REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME = $(subst requirements,requirements.pkg.freeze,$(REQUIREMENTS_AWS_CLI_FILE_NAME))
 FUNCTIONS_REQUIREMENTS = requirements.functions.txt
 GIT_HASH_COMMIT = $(shell git rev-parse --short HEAD)
 CONFIG_VERSION = $(shell grep -r version config.toml | awk -F '"' '{print $$2}')
+S3_BUCKET = $(shell grep -r S3_bucket_uri config.toml | awk -F '"' '{print $$2}')
+S3_PACKAGE_PATH = $(shell grep -r S3_folder_path config.toml | awk -F '"' '{print $$2}')
+S3_BASE_URI =  $(S3_BUCKET)/$(S3_PACKAGE_PATH)
 VERSION = $(CONFIG_VERSION).$(GIT_HASH_COMMIT)
 PYTESTS_RESULT_FILE_NAME = pytest.report.html
-VENV_ACTIVATE_PATH = .venv/bin/activate
-VENV_PKG_ACTIVATE_PATH = .venv_pkg/bin/activate
+VENV_ACTIVATE_PATH = $(VENV_TEST_FOLDER_NAME)/bin/activate
+VENV_PKG_ACTIVATE_PATH = $(VENV_PKG_FOLDER_NAME)/bin/activate
+VENV_AWS_CLI_ACTIVATE_PATH = $(VENV_AWS_CLI_FOLDER_NAME)/bin/activate
 PYTHON_FILE_EXTENSION = '*.py'
 #python -m site | grep "$(pwd).*site-packages" | sed "s/^.*'\(.*\)'.*$/\1/"
 #basename $(dirname "./lambda_function2/requirements.txt")
@@ -35,7 +46,7 @@ PYTHON_FILE_EXTENSION = '*.py'
 
 LAMBDA_FUNCTIONS = $(shell for path in $$(find -name $(REQUIREMENTS_FILE_NAME)); do basename $$(dirname $$path); done)
 LAMBDA_PKG_ZIPS = $(foreach FUNCTION_NAME,$(LAMBDA_FUNCTIONS), ./$(OUTPUT_PKG_PATH)/$(FUNCTION_NAME).$(VERSION).zip)
-
+LAMBDA_PKG_ZIPS_PUBLISHED = $(subst .zip,.published,$(LAMBDA_PKG_ZIPS))
 
 REQUIREMENTS_FILES := $(shell find -name $(REQUIREMENTS_FILE_NAME))
 REQUIREMENTS_FREEZE_FILES := $(subst  $(REQUIREMENTS_FILE_NAME),$(REQUIREMENTS_FREEZE_FILE_NAME),$(REQUIREMENTS_FILES))
@@ -75,6 +86,24 @@ $(MASTER_ACTIVATE_PATH) : $(FUNCTIONS_REQUIREMENTS) $(REQUIREMENTS_DEV_FILE_NAME
 	@source $@ && pip install -r $(FUNCTIONS_REQUIREMENTS)
 	@echo -e "\e[32m====> touch $@\e[0m"
 	@touch $@ # touch activate file to be sure make record it
+
+$(VENV_AWS_CLI_ACTIVATE_PATH) :
+	@echo -e "\e[32m==> Create virtual env $@\e[0m"
+	@virtualenv $(subst /bin/activate,, $@)
+	@source $@ && pip install --upgrade pip
+	@echo -e "\e[32m====> touch $@\e[0m"
+	@touch $@ # touch activate file to be sure make record it
+
+$(REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME) : $(REQUIREMENTS_AWS_CLI_FILE_NAME) $(VENV_AWS_CLI_ACTIVATE_PATH)
+	@echo -e "\e[32m==> Create install package $@\e[0m"
+	@source $(VENV_AWS_CLI_ACTIVATE_PATH)  && pip install -r $<
+	@echo -e "\e[32m====> generate freeze file $@\e[0m"
+	@source $(VENV_AWS_CLI_ACTIVATE_PATH) && pip freeze > $@
+
+$(LAMBDA_PKG_ZIPS_PUBLISHED) : %.published : %.zip $(REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME)
+	@echo -e "\e[32m==> publishing package $< to S3\e[0m"
+	@source $(VENV_AWS_CLI_ACTIVATE_PATH)  && aws s3 cp $< $(subst $(PACKAGE_FOLDER_NAME),$(S3_BASE_URI),$<)
+	@touch $@
 
 
 $(FUNCTION_PKG_ACTIVATE_PATH):
@@ -167,13 +196,16 @@ help:
 	@grep -E '^[a-zA-Z0-9_%/-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 
-create-local-venv: $(REQUIREMENTS_FREEZE_FILES) ## Create all function venv
+create-aws-cli-venv: $(REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME) ## Create venv for aws cli
+	@echo -e "\e[32m==> Create aws cli venv\e[0m"
+
+create-local-venv: $(REQUIREMENTS_FREEZE_FILES) ## Create locals function venv
 	@echo -e "\e[32m==> Create local venv\e[0m"
 
 create-master-venv: $(REQUIREMENTS_FREEZE_FILE_NAME) ## Create master venv
 	@echo -e "\e[32m==> Create master venv\e[0m"
 
-create-all-venv: create-master-venv create-local-venv ## Create all function environment and a master venv
+create-all-venv: create-master-venv create-local-venv create-aws-cli-venv ## Create all function environment and a master venv
 	@echo -e "\e[32m==> Create all venv\e[0m"
 
 clean-pytest-result: ## Clean pytest result to force retest.
@@ -229,3 +261,6 @@ print-value:
 
 create-packages: $(LAMBDA_PKG_ZIPS) ## Create all the packages
 	@echo -e "\e[32m==> Create packages \e[0m"
+
+publish-packages-to-s3: $(LAMBDA_PKG_ZIPS_PUBLISHED) ## publish all the package to S3
+	@echo -e "\e[32m==> publish packages to S3 \e[0m"

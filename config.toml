@@ -1,4 +1,4 @@
 version = "0.1"
 
-S3_bucket_uri = ""
-S3_folder_path = ""
+S3_bucket_uri = "s3://hw-lambda-packages.programmableproduction.com"
+S3_folder_path = "packages/lambda"
