@@ -87,7 +87,7 @@ celerybeat-schedule
 
 # Environments
 .env
-.venv
+.venv_aws/
 env/
 venv/
 **/.venv_pkg/
@@ -110,10 +110,6 @@ venv.bak/
 .mypy_cache/
 **/.mypy_cache/
 
-# pytest
-.mypy_cache/
-**/.mypy_cache/
-
 # project report files
 **/pytest.report.html
 **/requirements.freeze.tests.txt
@@ -122,3 +118,15 @@ venv.bak/
 
 /requirements.functions.txt
 /requirements.pkg.freeze.awscli.txt
+
+# exlude all setup.cfg but keep the root one
+/**/setup.cfg
+!/setup.cfg
+
+
+# Exclude package requirement
+**/packages
+terraform/**/variable.version.tf
+terraform/test/terraform/.terraform*
+terraform/test/terraform/terraform*
+
