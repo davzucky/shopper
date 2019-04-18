@@ -10,12 +10,29 @@
 # Force shell to be bash
 SHELL := /bin/bash
 
+
+######################################################################################
+###############              Variable section                #########################
+######################################################################################
+
+CONFIG_VERSION = $(shell grep -r version config.toml | awk -F '"' '{print $$2}')
+PROJECT_NAME = $(shell grep -r name config.toml | awk -F '"' '{print $$2}')
+S3_BUCKET = $(shell grep -r S3_bucket_uri config.toml | awk -F '"' '{print $$2}')
+S3_PACKAGE_PATH = $(shell grep -r S3_folder_path config.toml | awk -F '"' '{print $$2}')
+BINARY_FOLDER = ./bin
 PACKAGE_FOLDER_NAME = packages
-OUTPUT_PKG_PATH = ./$(PACKAGE_FOLDER_NAME)
+
+TERRAFORM_BINARY_PATH = $(binary_folder)/terraform
+TERRAFORM_MODULE_PATH = ./terraform/$(PROJECT_NAME)
+TERRAFORM_VERSION_FILE = $(TERRAFORM_MODULE_PATH)/variable.version.tf
+TERRAFORM_MODULE_PACKAGES = $(TERRAFORM_MODULE_PATH)/$(PACKAGE_FOLDER_NAME)
+OUTPUT_PKG_PATH = $(TERRAFORM_MODULE_PACKAGES)
+
 OUTPUT_TEST_RESULT_PATH = ./test_reports
 VENV_TEST_FOLDER_NAME = .venv
 VENV_PKG_FOLDER_NAME = .venv_pkg
 VENV_AWS_CLI_FOLDER_NAME = .venv_aws
+
 
 PYTEST_ARGUMENTS = --flake8 --mypy --mypy-ignore-missing-imports --self-contained-html
 SETUP_CFG_FILE_NAME = setup.cfg
@@ -29,9 +46,6 @@ REQUIREMENTS_PKG_FREEZE_FILE_NAME = $(subst requirements,requirements.pkg.freeze
 REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME = $(subst requirements,requirements.pkg.freeze,$(REQUIREMENTS_AWS_CLI_FILE_NAME))
 FUNCTIONS_REQUIREMENTS = requirements.functions.txt
 GIT_HASH_COMMIT = $(shell git rev-parse --short HEAD)
-CONFIG_VERSION = $(shell grep -r version config.toml | awk -F '"' '{print $$2}')
-S3_BUCKET = $(shell grep -r S3_bucket_uri config.toml | awk -F '"' '{print $$2}')
-S3_PACKAGE_PATH = $(shell grep -r S3_folder_path config.toml | awk -F '"' '{print $$2}')
 S3_BASE_URI =  $(S3_BUCKET)/$(S3_PACKAGE_PATH)
 VERSION = $(CONFIG_VERSION).$(GIT_HASH_COMMIT)
 PYTESTS_RESULT_FILE_NAME = pytest.report.html
@@ -60,10 +74,14 @@ FUNCTION_PKG_ACTIVATE_PATH = $(subst  $(REQUIREMENTS_FILE_NAME),$(VENV_PKG_ACTIV
 VENV_ROOT_PATH = $(subst  /bin/activate,,$(FUNCTION_ACTIVATE_PATH))
 VENV_PKG_ROOT_PATH = $(subst  /bin/activate,,$(FUNCTION_PKG_ACTIVATE_PATH))
 
-DIRECTORY_EXCLUSION = -path ./.venv $(patsubst  %,-o -path %,$(VENV_ROOT_PATH)) $(patsubst  %,-o -path %,$(VENV_PKG_ROOT_PATH))
+DIRECTORY_EXCLUSION = -path ./.venv $(patsubst  %,-o -path %,$(VENV_ROOT_PATH)) $(patsubst  %,-o -path %,$(VENV_PKG_ROOT_PATH)) -o -path ./.venv_aws
 PROJECT_PYTHON_FILES = $(shell find . -type d \( $(DIRECTORY_EXCLUSION) \) -prune -o -name $(PYTHON_FILE_EXTENSION) -print)
 
 MASTER_ACTIVATE_PATH = $(VENV_ACTIVATE_PATH)
+
+######################################################################################
+###############              Create virtual envs             #########################
+######################################################################################
 
 $(FUNCTIONS_REQUIREMENTS): $(REQUIREMENTS_FILES) $(REQUIREMENTS_TESTS_FILES)
 	@echo -e "\e[32m==> Create file $@ \e[0m"
@@ -102,9 +120,8 @@ $(REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME) : $(REQUIREMENTS_AWS_CLI_FILE_NAME) $(V
 
 $(LAMBDA_PKG_ZIPS_PUBLISHED) : %.published : %.zip $(REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME)
 	@echo -e "\e[32m==> publishing package $< to S3\e[0m"
-	@source $(VENV_AWS_CLI_ACTIVATE_PATH)  && aws s3 cp $< $(subst $(PACKAGE_FOLDER_NAME),$(S3_BASE_URI),$<)
+	@source $(VENV_AWS_CLI_ACTIVATE_PATH)  && aws s3 cp $< $(subst $(PACKAGE_FOLDER_NAME),$(S3_BASE_URI)/$(VERSION),$<)
 	@touch $@
-
 
 $(FUNCTION_PKG_ACTIVATE_PATH):
 	@echo -e "\e[32m==> Create virtual env $@\e[0m"
@@ -119,7 +136,6 @@ $(REQUIREMENTS_PKG_FREEZE_FILES): %$(REQUIREMENTS_PKG_FREEZE_FILE_NAME): %$(REQU
 	 pip install -r $<
 	@source $(subst $(REQUIREMENTS_PKG_FREEZE_FILE_NAME),$(VENV_PKG_ACTIVATE_PATH), $@) && \
 	 pip freeze > $@
-
 
 $(REQUIREMENTS_FREEZE_FILES): %$(REQUIREMENTS_FREEZE_FILE_NAME): %$(REQUIREMENTS_FILE_NAME) %$(VENV_ACTIVATE_PATH)
 	@echo -e "\e[32m==> Install pip requirement from $@ $<\e[0m"
@@ -151,6 +167,10 @@ $(REQUIREMENTS_FREEZE_FILE_NAME): $(MASTER_ACTIVATE_PATH) $(REQUIREMENTS_DEV_FIL
 	@source $(subst $(REQUIREMENTS_FREEZE_FILE_NAME),$(VENV_ACTIVATE_PATH), $@) && \
 	 pip freeze > $@
 
+######################################################################################
+###############               Testing venv                   #########################
+######################################################################################
+
 $(SETUP_CFG_FILES): $(SETUP_CFG_FILE_NAME)
 	@echo -e "\e[32m==> Copy $< to $@ \e[0m"
 	@cp $< $@
@@ -174,13 +194,16 @@ $(PYTESTS_RESULT_FILE_NAME): $(MASTER_ACTIVATE_PATH) $(PROJECT_PYTHON_FILES) $(S
 	 pytest --html=$@ $(PYTEST_ARGUMENTS) .
 
 
+######################################################################################
+###############           Create lambda package              #########################
+######################################################################################
+
 $(OUTPUT_PKG_PATH)/.touch:
 	@echo -e "\e[32m==> Create ouput package folder $$@ $$(@D)\e[0m"
 	@mkdir $(OUTPUT_PKG_PATH)
 	@touch $@
 
-
-$(LAMBDA_PKG_ZIPS): ./$(OUTPUT_PKG_PATH)/%.$(VERSION).zip: ./%/$(VENV_PKG_ACTIVATE_PATH) %/$(REQUIREMENTS_PKG_FREEZE_FILE_NAME) $(OUTPUT_PKG_PATH)/.touch
+$(LAMBDA_PKG_ZIPS): ./$(OUTPUT_PKG_PATH)/%.$(VERSION).zip: ./%/$(VENV_PKG_ACTIVATE_PATH) ./%/$(PYTESTS_RESULT_FILE_NAME) %/$(REQUIREMENTS_PKG_FREEZE_FILE_NAME) $(OUTPUT_PKG_PATH)/.touch
 	@echo -e "\e[32m==> Create lambda package $@ \e[0m"
 	@echo -e "\e[32m====> add site-package \e[0m"
 	@cd $$(source $< && python -m site | grep "$$(pwd).*site-packages" | sed "s/^.*'\(.*\)'.*$$/\1/") && \
@@ -189,12 +212,21 @@ $(LAMBDA_PKG_ZIPS): ./$(OUTPUT_PKG_PATH)/%.$(VERSION).zip: ./%/$(VENV_PKG_ACTIVA
 	@cd $(subst $(VENV_PKG_ACTIVATE_PATH),,$<) && \
 	 zip -g $(shell pwd)/$@  $(subst $(subst $(VENV_PKG_ACTIVATE_PATH),,$<),,$(filter-out  ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)tests/%,$(filter ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)%,$(PROJECT_PYTHON_FILES))))
 
+
+$(TERRAFORM_VERSION_FILE): $(LAMBDA_PKG_ZIPS)
+	@echo -e "\e[32m==> Create terraform variable version file $@ \e[0m"
+	@printf '%b\n' "variable \"module_version\" { \n  type = \"string\" \n  description = \"version of the module\" \n  default = \"$(VERSION)\" \n }" > $@
+
+
+######################################################################################
+###############           Main entries points                #########################
+######################################################################################
+
 help:
 # http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 	@echo "Generic makefile to manage python lambda function development"
 	@echo "====================="
 	@grep -E '^[a-zA-Z0-9_%/-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-
 
 create-aws-cli-venv: $(REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME) ## Create venv for aws cli
 	@echo -e "\e[32m==> Create aws cli venv\e[0m"
@@ -233,11 +265,9 @@ clean: clean-pytest-result ## Clean all build file created
 	@echo -e "\e[32m====> Remove output path folder $(FUNCTIONS_REQUIREMENTS)\e[0m"
 	@rm $(FUNCTIONS_REQUIREMENTS) -f
 
-
 format-code: $(REQUIREMENTS_FREEZE_FILE_NAME) ## format all the code using black
 	@echo -e "\e[32m==> Reformat code using black\e[0m"
 	@source $(MASTER_ACTIVATE_PATH) && black .
-
 
 test-local-venv: $(PYTESTS_RESULT_FILES) ## Test local the functions using their local venv
 	@echo -e "\e[32m==> Test using local venv\e[0m"
@@ -258,8 +288,7 @@ print-value:
 	@echo $(LAMBDA_FUNCTIONS)
 	@echo $(LAMBDA_PKG_ZIPS)
 
-
-create-packages: $(LAMBDA_PKG_ZIPS) ## Create all the packages
+create-packages: $(TERRAFORM_VERSION_FILE)  ## Create all the packages
 	@echo -e "\e[32m==> Create packages \e[0m"
 
 publish-packages-to-s3: $(LAMBDA_PKG_ZIPS_PUBLISHED) ## publish all the package to S3
