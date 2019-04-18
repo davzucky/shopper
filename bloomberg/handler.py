@@ -4,7 +4,6 @@ import logging
 import tempfile
 import uuid
 
-from aws_xray_sdk.core.lambda_launcher import LambdaContext
 from typing import Dict, Any
 
 from bloomberg.aws import (
@@ -54,7 +53,7 @@ def get_env_variable(env_var_name: str):
     return variable
 
 
-def handler(event: Dict[str, Any], context: LambdaContext):
+def handler(event: Dict[str, Any], context):
     bucket = get_env_variable(AWS_S3_BUCKET)
     region = get_env_variable(AWS_REGION)
 
