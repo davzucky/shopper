@@ -1,3 +1,4 @@
+name = "shopper"
 version = "0.1"
 
 S3_bucket_uri = "s3://hw-lambda-packages.programmableproduction.com"
