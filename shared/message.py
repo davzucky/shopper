@@ -3,6 +3,6 @@ from dataclasses_json import DataClassJsonMixin
 
 
 @dataclass
-class BloombergMessage(DataClassJsonMixin):
+class LoadDataMessage(DataClassJsonMixin):
     ticker: str
     file_path: str
