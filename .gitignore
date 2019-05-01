@@ -88,6 +88,7 @@ celerybeat-schedule
 # Environments
 .env
 .venv_aws/
+**/.venv_infra/
 env/
 venv/
 **/.venv_pkg/
