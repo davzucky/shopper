@@ -44,7 +44,7 @@ REQUIREMENTS_FREEZE_FILE_NAME = $(subst requirements,requirements.freeze,$(REQUI
 REQUIREMENTS_TESTS_FREEZE_FILE_NAME = $(subst requirements,requirements.freeze,$(REQUIREMENTS_TESTS_FILE_NAME))
 REQUIREMENTS_PKG_FREEZE_FILE_NAME = $(subst requirements,requirements.pkg.freeze,$(REQUIREMENTS_FILE_NAME))
 REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME = $(subst requirements,requirements.pkg.freeze,$(REQUIREMENTS_AWS_CLI_FILE_NAME))
-FUNCTIONS_REQUIREMENTS = requirements.functions.txt
+REQUIREMENTS_FUNCTIONS= requirements.functions.txt
 GIT_HASH_COMMIT = $(shell git rev-parse --short HEAD)
 S3_BASE_URI =  $(S3_BUCKET)/$(S3_PACKAGE_PATH)
 VERSION = $(CONFIG_VERSION).$(GIT_HASH_COMMIT)
@@ -79,15 +79,19 @@ PROJECT_PYTHON_FILES = $(shell find . -type d \( $(DIRECTORY_EXCLUSION) \) -prun
 
 MASTER_ACTIVATE_PATH = $(VENV_ACTIVATE_PATH)
 
+define \n
+
+
+endef
 ######################################################################################
 ###############              Create virtual envs             #########################
 ######################################################################################
 
-$(FUNCTIONS_REQUIREMENTS): $(REQUIREMENTS_FILES) $(REQUIREMENTS_TESTS_FILES)
+$(REQUIREMENTS_FUNCTIONS): $(REQUIREMENTS_FILES) $(REQUIREMENTS_TESTS_FILES)
 	@echo -e "\e[32m==> Create file $@ \e[0m"
 	@rm $@ -f
-	@echo $(patsubst %,-r %,$(REQUIREMENTS_FILES)) > $@
-	@echo $(patsubst %,-r %,$(REQUIREMENTS_TESTS_FILES)) >> $@
+	@echo -e $(patsubst %,-r % \\n,$(REQUIREMENTS_FILES)) > $@
+	@echo -e $(patsubst %,-r % \\n,$(REQUIREMENTS_TESTS_FILES)) >> $@
 
 $(FUNCTION_ACTIVATE_PATH):
 	@echo -e "\e[32m==> Create virtual env $@\e[0m"
@@ -96,12 +100,12 @@ $(FUNCTION_ACTIVATE_PATH):
 	@echo -e "\e[32m====> touch $@\e[0m"
 	@touch $@ # touch activate file to be sure make record it
 
-$(MASTER_ACTIVATE_PATH) : $(FUNCTIONS_REQUIREMENTS) $(REQUIREMENTS_DEV_FILE_NAME)
+$(MASTER_ACTIVATE_PATH) : $(REQUIREMENTS_FUNCTIONS) $(REQUIREMENTS_DEV_FILE_NAME)
 	@echo -e "\e[32m==> Create virtual env $@\e[0m"
 	@virtualenv $(subst /bin/activate,, $@)
 	@source $@ && pip install --upgrade pip
 	@source $@ && pip install -r $(REQUIREMENTS_DEV_FILE_NAME)
-	@source $@ && pip install -r $(FUNCTIONS_REQUIREMENTS)
+	@source $@ && pip install -r $(REQUIREMENTS_FUNCTIONS)
 	@echo -e "\e[32m====> touch $@\e[0m"
 	@touch $@ # touch activate file to be sure make record it
 
@@ -160,7 +164,7 @@ $(REQUIREMENTS_FREEZE_FILE_NAME): $(MASTER_ACTIVATE_PATH) $(REQUIREMENTS_DEV_FIL
 	@echo -e "\e[32m==> create $@ \e[0m"
 	@echo -e "\e[32m====> Install requirements from sub functions \e[0m"
 	@source $(MASTER_ACTIVATE_PATH) && \
-	 pip install $(patsubst %,-r %,$(REQUIREMENTS_FREEZE_FILES)) $(patsubst %,-r %,$(REQUIREMENTS_TESTS_FREEZE_FILES))
+	 pip install --ignore-installed $(patsubst %,-r %,$(REQUIREMENTS_FREEZE_FILES)) $(patsubst %,-r %,$(REQUIREMENTS_TESTS_FREEZE_FILES))
 	@echo -e "\e[32m====> Install requirements $(REQUIREMENTS_DEV_FILE_NAME)\e[0m"
 	@source $(MASTER_ACTIVATE_PATH) && \
 	 pip install -r $(REQUIREMENTS_DEV_FILE_NAME)
@@ -262,7 +266,7 @@ clean: clean-pytest-result ## Clean all build file created
 	@echo -e "\e[32m====> Remove output path folder $(OUTPUT_PKG_PATH)\e[0m"
 	@rm $(OUTPUT_PKG_PATH) -rf
 
-	@echo -e "\e[32m====> Remove output path folder $(FUNCTIONS_REQUIREMENTS)\e[0m"
+	@echo -e "\e[32m====> Remove output path folder $(REQUIREMENTS_FUNCTIONS)\e[0m"
 	@rm $(FUNCTIONS_REQUIREMENTS) -f
 
 format-code: $(REQUIREMENTS_FREEZE_FILE_NAME) ## format all the code using black
