@@ -1,10 +1,8 @@
-import sys
-import os
 import logging
+import os
+import sys
 import tempfile
 import uuid
-
-
 from typing import Dict, Any
 
 from bloomberg.aws import (
@@ -12,8 +10,7 @@ from bloomberg.aws import (
     append_ohlc_to_file,
     upload_file_from_local_to_S3,
 )
-from .message import LoadDataMessage
-
+from shared.message import get_messages_from_records
 from .bloomberg import (
     get_bloomberg_ticker_market_data,
     BloombergMarketDataError,
@@ -25,10 +22,6 @@ logger.setLevel(logging.INFO)
 
 AWS_S3_BUCKET = "aws_s3_bucket"
 AWS_REGION = "aws_region"
-
-
-def get_bloomberg_message(record: Dict[str, Any]) -> LoadDataMessage:
-    return LoadDataMessage.from_json(record["body"])
 
 
 def process_market_data_error(data: BloombergMarketDataError):
@@ -59,8 +52,7 @@ def handler(event: Dict[str, Any], context):
     bucket = get_env_variable(AWS_S3_BUCKET)
     region = get_env_variable(AWS_REGION)
 
-    for record in event["Records"]:
-        message = get_bloomberg_message(record)
+    for message in get_messages_from_records(event):
         market_data = get_bloomberg_ticker_market_data(message.ticker)
         if isinstance(market_data, BloombergMarketDataError):
             process_market_data_error(market_data)
