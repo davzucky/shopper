@@ -273,7 +273,7 @@ clean: clean-pytest-result ## Clean all build file created
 
 format-code: $(REQUIREMENTS_FREEZE_FILE_NAME) ## format all the code using black
 	@echo -e "\e[32m==> Reformat code using black\e[0m"
-	@source $(MASTER_ACTIVATE_PATH) && black .
+	@source $(MASTER_ACTIVATE_PATH) && black . --exclude .venv
 
 test-local-venv: $(PYTESTS_RESULT_FILES) ## Test local the functions using their local venv
 	@echo -e "\e[32m==> Test using local venv\e[0m"
