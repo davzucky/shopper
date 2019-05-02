@@ -1,8 +1,6 @@
-from tiingo_fetcher.handler import (
-    get_tiingo_market_data,
-    transform_to_output,
-    get_csv_text,
-)
+import tempfile
+
+from ..handler import get_tiingo_market_data, transform_to_output, save_to_csv_file
 
 
 def test_transform_input_dict_to_new_format():
@@ -44,12 +42,16 @@ def test_write_dict_to_memory_string_csv():
             "volume": "25881697",
         }
     ]
-    output_str = get_csv_text(input_dict)
+    temp_file = tempfile.NamedTemporaryFile().name
+    csv_path = save_to_csv_file(input_dict, temp_file)
+    with open(temp_file, "r") as csv:
+        output_str = csv.read()
     expected_str = (
-        "date,close,high,low,open,volume\r\n2019-04-08,200.1,200.23,"
-        "196.34,196.42,25881697\r\n"
+        "date,close,high,low,open,volume\n2019-04-08,200.1,200.23,"
+        "196.34,196.42,25881697\n"
     )
-    assert expected_str == output_str
+    print(csv_path)
+    assert output_str == expected_str
 
 
 def test_call_tiingo():
