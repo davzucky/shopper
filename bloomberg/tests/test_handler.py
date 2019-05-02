@@ -4,7 +4,7 @@ import pytest
 from datetime import datetime, date, time
 from typing import Dict, Any
 
-from ..message import LoadDataMessage
+from ..message import Message
 from ..aws import download_file_from_S3_to_temp, get_ohcl_row_str
 from .test_bloomberg import set_request_mock_valid_data
 from .test_aws import do_test_setup, BUCKET, REGION_NAME, SAMPLE_CONTENT
@@ -107,7 +107,7 @@ def test_handler_update_s3_file_that_exist_add_new_row(
 
 
 def get_sample_sqs_message(ticker: str, file_key: str) -> Dict[str, Any]:
-    message = LoadDataMessage(ticker, file_key)
+    message = Message(ticker, file_key)
     #
     return {
         "Records": [
