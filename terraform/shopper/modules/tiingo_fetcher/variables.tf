@@ -21,3 +21,8 @@ variable "module_version" {
   type = "string"
   description = "Version of the module"
 }
+
+variable "tiingo_api_key"  {
+  type = "string"
+  description = "tiingo api key to use"
+}
