@@ -25,3 +25,7 @@ resource "aws_s3_bucket" "test_market_data_bucket" {
   bucket = "market-data-${lower(random_id.test.b64_url)}"
   region = "${local.region}"
 }
+
+output "bucket_name" {
+  value = "${aws_s3_bucket.test_market_data_bucket.bucket}"
+}
