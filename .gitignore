@@ -128,6 +128,4 @@ venv.bak/
 # Exclude package requirement
 **/packages
 terraform/**/variable.version.tf
-terraform/test/terraform/.terraform*
-terraform/test/terraform/terraform*
-
+/**/.terraform/
