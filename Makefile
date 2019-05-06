@@ -22,7 +22,11 @@ S3_PACKAGE_PATH = $(shell grep -r S3_folder_path config.toml | awk -F '"' '{prin
 BINARY_FOLDER = ./bin
 PACKAGE_FOLDER_NAME = packages
 
-TERRAFORM_BINARY_PATH = $(binary_folder)/terraform
+TERRAFORM_VERSION = 0.11.13
+TERRAFORM_URL = https://releases.hashicorp.com/terraform/$(TERRAFORM_VERSION)/terraform_$(TERRAFORM_VERSION)_linux_amd64.zip
+TERRAFORM_TEMP_ZIP = $(BINARY_FOLDER)/terraform.zip
+TERRAFORM_BINARY_VERSION_FILE = $(BINARY_FOLDER)/terraform_$(TERRAFORM_VERSION)
+TERRAFORM_BINARY_PATH = $(BINARY_FOLDER)/terraform
 TERRAFORM_MODULE_PATH = ./terraform/$(PROJECT_NAME)
 TERRAFORM_VERSION_FILE = $(TERRAFORM_MODULE_PATH)/variable.version.tf
 TERRAFORM_MODULE_PACKAGES = $(TERRAFORM_MODULE_PATH)/$(PACKAGE_FOLDER_NAME)
@@ -78,6 +82,7 @@ DIRECTORY_EXCLUSION = -path ./.venv $(patsubst  %,-o -path %,$(VENV_ROOT_PATH)) 
 PROJECT_PYTHON_FILES = $(shell find . -type d \( $(DIRECTORY_EXCLUSION) \) -prune -o -name $(PYTHON_FILE_EXTENSION) -print)
 
 MASTER_ACTIVATE_PATH = $(VENV_ACTIVATE_PATH)
+
 
 define \n
 
@@ -219,10 +224,33 @@ $(LAMBDA_PKG_ZIPS): ./$(OUTPUT_PKG_PATH)/%.$(VERSION).zip: ./%/$(VENV_PKG_ACTIVA
 #	 $(subst $(subst $(VENV_PKG_ACTIVATE_PATH),,$<),,$(filter-out  ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)tests/%,$(filter ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)%,$(PROJECT_PYTHON_FILES))))
 
 
-$(TERRAFORM_VERSION_FILE): $(LAMBDA_PKG_ZIPS)
-	@echo -e "\e[32m==> Create terraform variable version file $@ \e[0m"
-	@printf '%b\n' "variable \"module_version\" { \n  type = \"string\" \n  description = \"version of the module\" \n  default = \"$(VERSION)\" \n }" > $@
+#$(TERRAFORM_VERSION_FILE): $(LAMBDA_PKG_ZIPS)
+#	@echo -e "\e[32m==> Create terraform variable version file $@ \e[0m"
+#	@printf '%b\n' "variable \"module_version\" { \n  type = \"string\" \n  description = \"version of the module\" \n  default = \"$(VERSION)\" \n }" > $@
 
+
+######################################################################################
+###############           Binary management                  #########################
+######################################################################################
+
+$(BINARY_FOLDER)/.touch:
+	@echo -e "\e[32m==> Create ouput package folder $$@ $$(@D)\e[0m"
+	@mkdir $(BINARY_FOLDER)
+	@touch $@
+
+$(TERRAFORM_BINARY_VERSION_FILE): $(BINARY_FOLDER)/.touch
+	@echo -e "\e[32m==> Create Terraform version file $$@ $$(@D)\e[0m"
+	@touch $@
+
+$(TERRAFORM_TEMP_ZIP): $(TERRAFORM_BINARY_VERSION_FILE)
+	@echo -e "\e[32m==> Download terraform binary\e[0m"
+	@curl $(TERRAFORM_URL) -o $(TERRAFORM_TEMP_ZIP)
+
+
+$(TERRAFORM_BINARY_PATH): $(TERRAFORM_TEMP_ZIP)
+	@echo -e "\e[32m==> Extract terraform binary\e[0m"
+	@unzip -o $(TERRAFORM_TEMP_ZIP) -d $(BINARY_FOLDER)
+	@touch $(TERRAFORM_BINARY_PATH)
 
 ######################################################################################
 ###############           Main entries points                #########################
@@ -245,6 +273,9 @@ create-master-venv: $(REQUIREMENTS_FREEZE_FILE_NAME) ## Create master venv
 
 create-all-venv: create-master-venv create-local-venv create-aws-cli-venv ## Create all function environment and a master venv
 	@echo -e "\e[32m==> Create all venv\e[0m"
+
+initialize-binary: $(TERRAFORM_BINARY_PATH) ## Download required external binary dependencies
+	@echo -e "\e[32m==> Download required external dependencies\e[0m"
 
 clean-pytest-result: ## Clean pytest result to force retest.
 	@echo -e "\e[32m==> Remove pytest.result.html\e[0m"
@@ -285,6 +316,13 @@ test-all-venv: test-local-venv test-master-venv ## Test all the functions using 
 	@echo -e "\e[32m==> Test all venv\e[0m"
 
 print-value:
+	@echo $(TERRAFORM_BINARY_VERSION_FILE)
+	@echo $(TERRAFORM_VERSION)
+	@echo $(TERRAFORM_URL)
+	@echo $(TERRAFORM_TEMP_ZIP)
+	@echo $(TERRAFORM_BINARY_VERSION_FILE)
+	@echo $(TERRAFORM_BINARY_PATH)
+
 	@echo $(filter $(subst $(PYTESTS_RESULT_FILE_NAME),,./lambda_function2/$(PYTESTS_RESULT_FILE_NAME))%,$(PROJECT_PYTHON_FILES))
 	@echo $(subst $(PYTESTS_RESULT_FILE_NAME),,$(PYTESTS_RESULT_FILES))
 	@echo $(REQUIREMENTS_FREEZE_FILE_NAME)
