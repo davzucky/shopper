@@ -193,14 +193,14 @@ $(1): $$(filter $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))%,$$(PROJECT_PYTHON_
 	@echo -e "\e[32m==> Test $$@ $$(@D)\e[0m"
 	@cd $$(@D) &&\
 	 source $(VENV_ACTIVATE_PATH) &&\
-	 pytest --html=$$(@F) $(PYTEST_ARGUMENTS) ./tests
+	 pytest -m "not terraform_unittest" --html=$$(@F) $(PYTEST_ARGUMENTS) ./tests
 endef
 $(foreach result_file_path,$(PYTESTS_RESULT_FILES),$(eval $(call Create_Result_File,$(result_file_path))))
 
 $(PYTESTS_RESULT_FILE_NAME): $(MASTER_ACTIVATE_PATH) $(PROJECT_PYTHON_FILES) $(SETUP_CFG_FILE_NAME)
 	@echo -e "\e[32m==> Test master venv $$@ $$(@D)\e[0m"
 	@source $(MASTER_ACTIVATE_PATH) && \
-	 pytest --html=$@ $(PYTEST_ARGUMENTS) .
+	 pytest -m "not terraform_unittest" --html=$@ $(PYTEST_ARGUMENTS) .
 
 
 ######################################################################################
@@ -245,7 +245,6 @@ $(TERRAFORM_BINARY_VERSION_FILE): $(BINARY_FOLDER)/.touch
 $(TERRAFORM_TEMP_ZIP): $(TERRAFORM_BINARY_VERSION_FILE)
 	@echo -e "\e[32m==> Download terraform binary\e[0m"
 	@curl $(TERRAFORM_URL) -o $(TERRAFORM_TEMP_ZIP)
-
 
 $(TERRAFORM_BINARY_PATH): $(TERRAFORM_TEMP_ZIP)
 	@echo -e "\e[32m==> Extract terraform binary\e[0m"
