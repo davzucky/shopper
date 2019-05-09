@@ -1,7 +1,5 @@
-from typing import Dict, Any, List
-
 import pytest
-
+from typing import Dict, Any, List
 from ..message import get_messages_from_records, Message
 
 
