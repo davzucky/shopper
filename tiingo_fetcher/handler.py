@@ -53,7 +53,7 @@ def transform_to_output(input_data: OrderedDict) -> Dict[str, object]:
 def save_to_csv_file(
     input_data: Iterator[Dict[str, object]],
     file_path: str,
-    csv_columns: List[str] = ["date", "close", "high", "low", "open", "volume"]
+    csv_columns: List[str] = ["date", "close", "high", "low", "open", "volume"],
 ):
     with open(file_path, "w") as output:
         writer = csv.DictWriter(output, fieldnames=csv_columns, quoting=csv.QUOTE_NONE)
@@ -71,8 +71,7 @@ def get_env_variable(env_var_name: str):
 
 
 def upload_file_from_local_to_S3(region_name, bucket_name, file_key, tmp_path) -> None:
-    # s3 = boto3.resource("s3", region_name=region_name)
-    s3 = boto3.client('s3', region_name=region_name)
+    s3 = boto3.client("s3", region_name=region_name)
     try:
         s3.upload_file(file_key, bucket_name, tmp_path)
     except ClientError as e:
@@ -94,13 +93,4 @@ def handler(event: Dict[str, Any], context):
         with open(tmp_file, "r") as result_file:
             nb_lines = len(result_file.readlines())
             print("The file {} contain {} lines".format(tmp_file, nb_lines))
-        # print("save temp result to {}".format(tmp_file))
         upload_file_from_local_to_S3(region, bucket, tmp_file, message.file_path)
-
-        #     process_market_data(market_data, bucket, region, message.file_pa
-        # pass
-        # message = get_bloomberg_message(record)
-        # market_data = get_bloomberg_ticker_market_data(message.ticker)
-        # if isinstance(market_data, BloombergMarketDataError):
-        #     process_market_data_error(market_data)
-        # elif isinstance(market_data, BloombergFundMarketData):
