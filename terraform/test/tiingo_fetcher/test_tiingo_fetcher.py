@@ -39,15 +39,20 @@ def test_output_contain_sqs_queue_name_init_with_tiingo_fetch(terraform_output):
 def test_output_contain_s3_bucket_name_init_with_tiingo_fetch(terraform_output):
     assert "market-data-" in terraform_output["s3_bucket_name"]["value"]
 
+
 def test_lambda_function_check_setup(terraform_output):
     lambda_function_name = terraform_output["lambda_function_name"]["value"]
 
-    client = boto3.client('lambda')
-    lambda_configuration = client.get_function_configuration(FunctionName=lambda_function_name)
+    client = boto3.client("lambda")
+    lambda_configuration = client.get_function_configuration(
+        FunctionName=lambda_function_name
+    )
     assert lambda_configuration["Runtime"] == "python3.7"
     assert lambda_configuration["Timeout"] == 60
     assert "TIINGO_API_KEY" in lambda_configuration["Environment"]["Variables"]
-    assert lambda_configuration["Environment"]["Variables"]["TIINGO_API_KEY"] == os.environ.get("TIINGO_API_KEY")
+    assert lambda_configuration["Environment"]["Variables"][
+        "TIINGO_API_KEY"
+    ] == os.environ.get("TIINGO_API_KEY")
 
 
 def test_lambda_trigger_is_sqs(terraform_output):
@@ -74,21 +79,28 @@ def test_lambda_trigger_is_sqs(clean_aws_resources, terraform_output, tmpdir):
     queue = sqs.get_queue_by_name(QueueName=sqs_queue_name)
     queue.send_message(MessageBody=Message(ticker_name, save_path).to_json())
 
-    time.sleep(30)
-
     s3 = boto3.resource("s3", region_name=region)  # type: botostubs.S3
-    try:
-        s3.Object(bucket_name, save_path).load()
-    except botocore.exceptions.ClientError as e:
-        if e.response["Error"]["Code"] == "404":
-            # The object does not exist.
-            AssertionError(
-                e.response["Error"],
-                "The file {} has not been saved to s3".format(save_path),
-            )
+
+    max_try = 30
+    for i in range(max_try + 1):
+        try:
+            s3.Object(bucket_name, save_path).load()
+        except botocore.exceptions.ClientError as e:
+            if e.response["Error"]["Code"] == "404":
+                if i < max_try:
+                    time.sleep(0.5)
+                    continue
+                else:
+                    # The object does not exist.
+                    AssertionError(
+                        e.response["Error"],
+                        "The file {} has not been saved to s3".format(save_path),
+                    )
+            else:
+                # Something else has gone wrong.
+                raise
         else:
-            # Something else has gone wrong.
-            raise
+            break
 
     local_path = os.path.join(tmpdir.dirname, str(uuid.uuid4()))
     s3.Bucket(bucket_name).download_file(save_path, local_path)
