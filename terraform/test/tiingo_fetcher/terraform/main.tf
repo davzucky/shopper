@@ -8,7 +8,7 @@ terraform {
   backend "s3" {
     region         = "ap-southeast-1"
     bucket         = "programmableproductioncom-dev-shopper-state"
-    key            = "terraform.tfstate"
+    key            = "testing/tiingo_fetcher/terraform.tfstate"
     dynamodb_table = "programmableproductioncom-dev-shopper-state-lock"
     encrypt        = true
   }
@@ -23,10 +23,6 @@ resource "random_string" "test" {
   length           = 8
   override_special = "-"
 }
-//
-//resource "random_id" "test" {
-//  byte_length = 8
-//}
 
 resource "aws_s3_bucket" "test_tiingo"{
   bucket = "market-data-${lower(random_string.test.result)}"

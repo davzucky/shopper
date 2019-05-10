@@ -39,6 +39,16 @@ def test_output_contain_sqs_queue_name_init_with_tiingo_fetch(terraform_output):
 def test_output_contain_s3_bucket_name_init_with_tiingo_fetch(terraform_output):
     assert "market-data-" in terraform_output["s3_bucket_name"]["value"]
 
+def test_lambda_function_check_setup(terraform_output):
+    lambda_function_name = terraform_output["lambda_function_name"]["value"]
+
+    client = boto3.client('lambda')
+    lambda_configuration = client.get_function_configuration(FunctionName=lambda_function_name)
+    assert lambda_configuration["Runtime"] == "python3.7"
+    assert lambda_configuration["Timeout"] == 60
+    assert "TIINGO_API_KEY" in lambda_configuration["Environment"]["Variables"]
+    assert lambda_configuration["Environment"]["Variables"]["TIINGO_API_KEY"] == os.environ.get("TIINGO_API_KEY")
+
 
 def test_lambda_trigger_is_sqs(terraform_output):
     function_name = terraform_output["lambda_function_name"]["value"]
