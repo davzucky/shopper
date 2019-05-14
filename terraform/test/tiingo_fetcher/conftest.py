@@ -10,12 +10,12 @@ tf = terraform.Terraform(working_dir=full_path)
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_terraform():
+def setup_terraform(version):
     tf.init()
     ret_code, out, err = tf.apply(
         skip_plan=True,
         var={
-            "module_version": "0.1.81f4b54",
+            "module_version": version,
             "tiingo_api_key": os.environ.get("TIINGO_API_KEY"),
         },
     )
