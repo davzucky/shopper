@@ -30,7 +30,7 @@ def setup_terraform(version):
         var={
             "module_version": version,
             "tiingo_api_key": os.environ.get("TIINGO_API_KEY"),
-        },
+        }
     )
 
     if ret_code != 0:
