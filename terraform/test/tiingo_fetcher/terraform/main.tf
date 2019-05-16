@@ -16,6 +16,8 @@ terraform {
 
 provider "aws" {
   region = "${local.region}"
+  version = "~> 2.0"
+
 }
 
 resource "random_string" "test" {
@@ -32,6 +34,7 @@ resource "aws_s3_bucket" "test_tiingo"{
 resource "aws_sqs_queue" "test_tiingo" {
   name = "tiingo_fetch-${lower(random_string.test.result)}"
   visibility_timeout_seconds = "300"
+  receive_wait_time_seconds = 20
 }
 
 module "tiingo_fetcher" {

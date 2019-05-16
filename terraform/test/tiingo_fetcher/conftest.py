@@ -23,9 +23,19 @@ def setup_terraform(version):
     if ret_code != 0:
         print(err)
         raise Exception("Error applying terraform. Error \n {}".format(err))
-    # yield
-    # tf.destroy(skip_plan=True, var={'module_version': '0.1.81f4b54',
-    #                               'tiingo_api_key': '51a96da20f20137299ac9511b8adb5f1fcfbca94'})
+
+    yield
+
+    ret_code, out, err = tf.destroy(
+        var={
+            "module_version": version,
+            "tiingo_api_key": os.environ.get("TIINGO_API_KEY"),
+        },
+    )
+
+    if ret_code != 0:
+        print(err)
+        raise Exception("Error detroying terraform. Error \n {}".format(err))
 
 
 @pytest.fixture()

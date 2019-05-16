@@ -21,11 +21,6 @@ def clean_aws_resources(terraform_output):
     s3 = boto3.resource("s3", region_name=region)  # type: botostubs.S3
     bucket = s3.Bucket(bucket_name)
 
-    # Cannot purge more than once per 60s. Because cannot find the
-    # function to count the number of items in the queue. Only delete at the end.
-    # if len(queue.get_messages()) > 0:
-    #     queue.purge()
-
     bucket.objects.all().delete()
     yield
     queue.purge()
