@@ -50,7 +50,7 @@ def test_lambda_function_check_setup(terraform_output):
     ] == os.environ.get("TIINGO_API_KEY")
 
 
-def test_lambda_trigger_is_sqs(terraform_output):
+def test_lambda_deployement_values(terraform_output):
     function_name = terraform_output["lambda_function_name"]["value"]
     region = terraform_output["region"]["value"]
     lambda_client = boto3.client("lambda", region_name=region)  # type: botostubs.Lambda

@@ -28,3 +28,8 @@ def version() -> str:
     config = toml.load(full_path)
     base_version = config["version"]
     return "{}.{}".format(base_version, get_git_commit_hash())
+
+
+@pytest.fixture(scope="session")
+def terraform_bin_path() -> str:
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "./bin/terraform")
