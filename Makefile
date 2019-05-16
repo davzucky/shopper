@@ -21,6 +21,7 @@ S3_BUCKET = $(shell grep -r S3_bucket_uri config.toml | awk -F '"' '{print $$2}'
 S3_PACKAGE_PATH = $(shell grep -r S3_folder_path config.toml | awk -F '"' '{print $$2}')
 BINARY_FOLDER = ./bin
 PACKAGE_FOLDER_NAME = packages
+PYTESTS_RESULT_FILE_NAME = pytest.report.html
 
 TERRAFORM_VERSION = 0.11.13
 TERRAFORM_URL = https://releases.hashicorp.com/terraform/$(TERRAFORM_VERSION)/terraform_$(TERRAFORM_VERSION)_linux_amd64.zip
@@ -30,6 +31,7 @@ TERRAFORM_BINARY_PATH = $(BINARY_FOLDER)/terraform
 TERRAFORM_MODULE_PATH = ./terraform/$(PROJECT_NAME)
 TERRAFORM_VERSION_FILE = $(TERRAFORM_MODULE_PATH)/variable.version.tf
 TERRAFORM_MODULE_PACKAGES = $(TERRAFORM_MODULE_PATH)/$(PACKAGE_FOLDER_NAME)
+TERRAFORM_PYTEST_RESULT = ./terraform/$(PYTESTS_RESULT_FILE_NAME)
 OUTPUT_PKG_PATH = $(TERRAFORM_MODULE_PACKAGES)
 
 OUTPUT_TEST_RESULT_PATH = ./test_reports
@@ -52,7 +54,6 @@ REQUIREMENTS_FUNCTIONS= requirements.functions.txt
 GIT_HASH_COMMIT = $(shell git rev-parse --short HEAD)
 S3_BASE_URI =  $(S3_BUCKET)/$(S3_PACKAGE_PATH)
 VERSION = $(CONFIG_VERSION).$(GIT_HASH_COMMIT)
-PYTESTS_RESULT_FILE_NAME = pytest.report.html
 VENV_ACTIVATE_PATH = $(VENV_TEST_FOLDER_NAME)/bin/activate
 VENV_PKG_ACTIVATE_PATH = $(VENV_PKG_FOLDER_NAME)/bin/activate
 VENV_AWS_CLI_ACTIVATE_PATH = $(VENV_AWS_CLI_FOLDER_NAME)/bin/activate
@@ -223,10 +224,20 @@ $(LAMBDA_PKG_ZIPS): ./$(OUTPUT_PKG_PATH)/%.$(VERSION).zip: ./%/$(VENV_PKG_ACTIVA
 	@zip -g $(shell pwd)/$@  $(filter-out  ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)tests/%,$(filter ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)%,$(PROJECT_PYTHON_FILES)))
 #	 $(subst $(subst $(VENV_PKG_ACTIVATE_PATH),,$<),,$(filter-out  ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)tests/%,$(filter ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)%,$(PROJECT_PYTHON_FILES))))
 
+$(TERRAFORM_VERSION_FILE): $(LAMBDA_PKG_ZIPS)
+	@echo -e "\e[32m==> Create terraform variable version file $@ \e[0m"
+	@printf '%b\n' "variable \"module_version\" { \n  type = \"string\" \n  description = \"version of the module\" \n  default = \"$(VERSION)\" \n }" > $@
 
-#$(TERRAFORM_VERSION_FILE): $(LAMBDA_PKG_ZIPS)
-#	@echo -e "\e[32m==> Create terraform variable version file $@ \e[0m"
-#	@printf '%b\n' "variable \"module_version\" { \n  type = \"string\" \n  description = \"version of the module\" \n  default = \"$(VERSION)\" \n }" > $@
+
+######################################################################################
+###############           Terraform testing                  #########################
+######################################################################################
+
+$(TERRAFORM_PYTEST_RESULT): $(TERRAFORM_VERSION_FILE)
+	@echo -e "\e[32m==> Create terraform test $@ \e[0m"
+	@source $(MASTER_ACTIVATE_PATH) && \
+	 pytest -m "terraform_unittest" --html=$@ $(PYTEST_ARGUMENTS) .
+
 
 
 ######################################################################################
@@ -313,6 +324,9 @@ test-master-venv: $(PYTESTS_RESULT_FILE_NAME) ## Test master the functions using
 
 test-all-venv: test-local-venv test-master-venv ## Test all the functions using the master venv
 	@echo -e "\e[32m==> Test all venv\e[0m"
+
+test-terraform-modules: $(TERRAFORM_PYTEST_RESULT) ## Test all module terraform deployment
+	@echo -e "\e[32m==> Test module\e[0m"
 
 print-value:
 	@echo $(TERRAFORM_BINARY_VERSION_FILE)
