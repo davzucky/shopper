@@ -208,23 +208,24 @@ $(PYTESTS_RESULT_FILE_NAME): $(MASTER_ACTIVATE_PATH) $(PROJECT_PYTHON_FILES) $(S
 ###############           Create lambda package              #########################
 ######################################################################################
 
-$(OUTPUT_PKG_PATH)/.touch:
-	@echo -e "\e[32m==> Create ouput package folder $$@ $$(@D)\e[0m"
-	@mkdir $(OUTPUT_PKG_PATH)
+$(OUTPUT_PKG_PATH)/.$(VERSION):
+	@echo -e "\e[32m==> Create touch file $$@ $$(@D)\e[0m"
+	@if [ ! -d $(OUTPUT_PKG_PATH) ]; then \
+		mkdir $(OUTPUT_PKG_PATH); \
+	 else \
+	 	rm $(OUTPUT_PKG_PATH)/*; \
+	 fi
 	@touch $@
 
-$(LAMBDA_PKG_ZIPS): ./$(OUTPUT_PKG_PATH)/%.$(VERSION).zip: ./%/$(VENV_PKG_ACTIVATE_PATH) ./%/$(PYTESTS_RESULT_FILE_NAME) %/$(REQUIREMENTS_PKG_FREEZE_FILE_NAME) $(OUTPUT_PKG_PATH)/.touch
+$(LAMBDA_PKG_ZIPS): ./$(OUTPUT_PKG_PATH)/%.$(VERSION).zip: ./%/$(VENV_PKG_ACTIVATE_PATH) ./%/$(PYTESTS_RESULT_FILE_NAME) %/$(REQUIREMENTS_PKG_FREEZE_FILE_NAME) $(OUTPUT_PKG_PATH)/.$(VERSION)
 	@echo -e "\e[32m==> Create lambda package $@ \e[0m"
 	@echo -e "\e[32m====> add site-package \e[0m"
 	@cd $$(source $< && python -m site | grep "$$(pwd).*site-packages" | sed "s/^.*'\(.*\)'.*$$/\1/") && \
 	 zip -r9 $(shell pwd)/$@ .
 	@echo -e "\e[32m====> add lambda module files \e[0m"
-#	@cd $(subst $(VENV_PKG_ACTIVATE_PATH),,$<) && \
-#	@echo ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)tests/%,$(filter ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)%,$(PROJECT_PYTHON_FILES)))
 	@zip -g $(shell pwd)/$@  $(filter-out  ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)tests/%,$(filter ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)%,$(PROJECT_PYTHON_FILES)))
-#	 $(subst $(subst $(VENV_PKG_ACTIVATE_PATH),,$<),,$(filter-out  ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)tests/%,$(filter ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)%,$(PROJECT_PYTHON_FILES))))
 
-$(TERRAFORM_VERSION_FILE): $(LAMBDA_PKG_ZIPS)
+$(TERRAFORM_VERSION_FILE):  $(LAMBDA_PKG_ZIPS)
 	@echo -e "\e[32m==> Create terraform variable version file $@ \e[0m"
 	@printf '%b\n' "variable \"module_version\" { \n  type = \"string\" \n  description = \"version of the module\" \n  default = \"$(VERSION)\" \n }" > $@
 
@@ -237,8 +238,6 @@ $(TERRAFORM_PYTEST_RESULT): $(TERRAFORM_VERSION_FILE)
 	@echo -e "\e[32m==> Create terraform test $@ \e[0m"
 	@source $(MASTER_ACTIVATE_PATH) && \
 	 pytest -m "terraform_unittest" --html=$@ $(PYTEST_ARGUMENTS) .
-
-
 
 ######################################################################################
 ###############           Binary management                  #########################
@@ -289,7 +288,7 @@ initialize-binary: $(TERRAFORM_BINARY_PATH) ## Download required external binary
 
 clean-pytest-result: ## Clean pytest result to force retest.
 	@echo -e "\e[32m==> Remove pytest.result.html\e[0m"
-	@rm $(PYTESTS_RESULT_FILE_NAME) $(PYTESTS_RESULT_FILES) -f
+	@rm $(PYTESTS_RESULT_FILE_NAME) $(PYTESTS_RESULT_FILES) $(TERRAFORM_PYTEST_RESULT) -f
 
 clean: clean-pytest-result ## Clean all build file created
 	@echo -e "\e[32m==> Clean working directory\e[0m"
@@ -310,7 +309,13 @@ clean: clean-pytest-result ## Clean all build file created
 	@rm $(OUTPUT_PKG_PATH) -rf
 
 	@echo -e "\e[32m====> Remove output path folder $(REQUIREMENTS_FUNCTIONS)\e[0m"
-	@rm $(FUNCTIONS_REQUIREMENTS) -f
+	@rm $(FUNCTIONS_REQUIREMENTS) -f$(FUNCTIONS_REQUIREMENTS)
+
+	@echo -e "\e[32m====> Delete bin folder \e[0m"
+	@rm $(BINARY_FOLDER) -rf
+
+	@echo -e "\e[32m====> Delete lambda packages\e[0m"
+	@rm $(TERRAFORM_MODULE_PACKAGES) -rf
 
 format-code: $(REQUIREMENTS_FREEZE_FILE_NAME) ## format all the code using black
 	@echo -e "\e[32m==> Reformat code using black\e[0m"
