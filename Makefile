@@ -208,16 +208,16 @@ $(PYTESTS_RESULT_FILE_NAME): $(MASTER_ACTIVATE_PATH) $(PROJECT_PYTHON_FILES) $(S
 ###############           Create lambda package              #########################
 ######################################################################################
 
-$(OUTPUT_PKG_PATH)/.$(VERSION):
+$(OUTPUT_PKG_PATH)/$(VERSION):
 	@echo -e "\e[32m==> Create touch file $$@ $$(@D)\e[0m"
 	@if [ ! -d $(OUTPUT_PKG_PATH) ]; then \
 		mkdir $(OUTPUT_PKG_PATH); \
 	 else \
-	 	rm $(OUTPUT_PKG_PATH)/*; \
+	 	rm $(OUTPUT_PKG_PATH)/* -f; \
 	 fi
 	@touch $@
 
-$(LAMBDA_PKG_ZIPS): ./$(OUTPUT_PKG_PATH)/%.$(VERSION).zip: ./%/$(VENV_PKG_ACTIVATE_PATH) ./%/$(PYTESTS_RESULT_FILE_NAME) %/$(REQUIREMENTS_PKG_FREEZE_FILE_NAME) $(OUTPUT_PKG_PATH)/.$(VERSION)
+$(LAMBDA_PKG_ZIPS): ./$(OUTPUT_PKG_PATH)/%.$(VERSION).zip: ./%/$(VENV_PKG_ACTIVATE_PATH) ./%/$(PYTESTS_RESULT_FILE_NAME) %/$(REQUIREMENTS_PKG_FREEZE_FILE_NAME) $(OUTPUT_PKG_PATH)/$(VERSION)
 	@echo -e "\e[32m==> Create lambda package $@ \e[0m"
 	@echo -e "\e[32m====> add site-package \e[0m"
 	@cd $$(source $< && python -m site | grep "$$(pwd).*site-packages" | sed "s/^.*'\(.*\)'.*$$/\1/") && \
