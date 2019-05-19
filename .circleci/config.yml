@@ -21,7 +21,10 @@ jobs:
             AWS_SECRET_ACCESS_KEY: "This_is_a_key"
             AWS_ACCESS_KEY_ID: "This_is_an_Id"
             BOTO_CONFIG: /dev/null
-
+       - persist_to_workspace:
+           root: .
+           paths:
+             - .
       - store_artifacts:
           path: pytest.report.html
           destination: pytest.report.html
@@ -29,7 +32,8 @@ jobs:
   build-lambda-packages:
     executor: lambda-executor
     steps:
-      - checkout
+      - attach_workspace:
+          at: .
       - run:
           name: build lambda packages
           command: |
@@ -44,7 +48,8 @@ jobs:
   push-lambda-packages-to-s3:
     executor: lambda-executor
     steps:
-        - checkout
+       - attach_workspace:
+           at: .
         - attach_workspace:
             at: packages
         - run:
