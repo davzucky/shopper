@@ -236,7 +236,7 @@ $(TERRAFORM_VERSION_FILE):  $(LAMBDA_PKG_ZIPS)
 ###############           Terraform testing                  #########################
 ######################################################################################
 
-$(TERRAFORM_PYTEST_RESULT): $(TERRAFORM_VERSION_FILE)
+$(TERRAFORM_PYTEST_RESULT): $(TERRAFORM_VERSION_FILE) $(TERRAFORM_BINARY_PATH)
 	@echo -e "\e[32m==> Create terraform test $@ \e[0m"
 	@source $(MASTER_ACTIVATE_PATH) && \
 	 pytest -m "terraform_unittest" --html=$@ $(PYTEST_ARGUMENTS) .
