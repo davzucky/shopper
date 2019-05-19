@@ -1,4 +1,3 @@
-
 version: 2.1
 executors:
   lambda-executor:
@@ -9,8 +8,8 @@ executors:
 jobs:
   test-local-venv:
     executor: lambda-executor
-#    docker:
-#      - image: circleci/python:3.7.2
+    #    docker:
+    #      - image: circleci/python:3.7.2
     steps:
       - checkout
       - run:
@@ -21,10 +20,10 @@ jobs:
             AWS_SECRET_ACCESS_KEY: "This_is_a_key"
             AWS_ACCESS_KEY_ID: "This_is_an_Id"
             BOTO_CONFIG: /dev/null
-       - persist_to_workspace:
-           root: .
-           paths:
-             - .
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
       - store_artifacts:
           path: pytest.report.html
           destination: pytest.report.html
@@ -48,14 +47,14 @@ jobs:
   push-lambda-packages-to-s3:
     executor: lambda-executor
     steps:
-       - attach_workspace:
-           at: .
-        - attach_workspace:
-            at: packages
-        - run:
-            name: Check package content
-            command: |
-              make --trace publish-packages-to-s3
+      - attach_workspace:
+          at: .
+      - attach_workspace:
+          at: packages
+      - run:
+          name: Check package content
+          command: |
+            make --trace publish-packages-to-s3
 
 workflows:
   version: 2
