@@ -15,7 +15,7 @@ jobs:
       - run:
           name: run tests local venv
           command: |
-            make test-local-venv
+            make test-all-venv
           environment:
             AWS_SECRET_ACCESS_KEY: "This_is_a_key"
             AWS_ACCESS_KEY_ID: "This_is_an_Id"
@@ -37,24 +37,38 @@ jobs:
           name: build lambda packages
           command: |
             make create-packages
-      - persist_to_workspace:
-          root: packages
-          # Must be relative path from root
-          paths:
-            - .
 
-
-  push-lambda-packages-to-s3:
+  test-terraform-modules:
     executor: lambda-executor
     steps:
       - attach_workspace:
           at: .
-      - attach_workspace:
-          at: packages
       - run:
-          name: Check package content
+          name: test terraform modules
           command: |
-            make --trace publish-packages-to-s3
+            make test-terraform-modules
+      - store_artifacts:
+          path: ./terraform/pytest.report.html
+          destination: pytest.report.html
+
+#      - persist_to_workspace:
+#          root: packages
+#          # Must be relative path from root
+#          paths:
+#            - .
+
+
+#  push-lambda-packages-to-s3:
+#    executor: lambda-executor
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - attach_workspace:
+#          at: packages
+#      - run:
+#          name: Check package content
+#          command: |
+#            make --trace publish-packages-to-s3
 
 workflows:
   version: 2
@@ -64,6 +78,9 @@ workflows:
       - build-lambda-packages:
           requires:
             - test-local-venv
-      - push-lambda-packages-to-s3:
+      - test-terraform-modules:
           requires:
             - build-lambda-packages
+#      - push-lambda-packages-to-s3:
+#          requires:
+#            - build-lambda-packages
