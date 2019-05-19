@@ -32,6 +32,7 @@ TERRAFORM_MODULE_PATH = ./terraform/$(PROJECT_NAME)
 TERRAFORM_VERSION_FILE = $(TERRAFORM_MODULE_PATH)/variable.version.tf
 TERRAFORM_MODULE_PACKAGES = $(TERRAFORM_MODULE_PATH)/$(PACKAGE_FOLDER_NAME)
 TERRAFORM_PYTEST_RESULT = ./terraform/$(PYTESTS_RESULT_FILE_NAME)
+TERRAFORM_TESTING_REQUIREMENTS = ./terraform/test/requirements.infra.txt
 OUTPUT_PKG_PATH = $(TERRAFORM_MODULE_PACKAGES)
 
 OUTPUT_TEST_RESULT_PATH = ./test_reports
@@ -50,7 +51,7 @@ REQUIREMENTS_FREEZE_FILE_NAME = $(subst requirements,requirements.freeze,$(REQUI
 REQUIREMENTS_TESTS_FREEZE_FILE_NAME = $(subst requirements,requirements.freeze,$(REQUIREMENTS_TESTS_FILE_NAME))
 REQUIREMENTS_PKG_FREEZE_FILE_NAME = $(subst requirements,requirements.pkg.freeze,$(REQUIREMENTS_FILE_NAME))
 REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME = $(subst requirements,requirements.pkg.freeze,$(REQUIREMENTS_AWS_CLI_FILE_NAME))
-REQUIREMENTS_FUNCTIONS= requirements.functions.txt
+REQUIREMENTS_FUNCTIONS = requirements.functions.txt
 GIT_HASH_COMMIT = $(shell git rev-parse --short HEAD)
 S3_BASE_URI =  $(S3_BUCKET)/$(S3_PACKAGE_PATH)
 VERSION = $(CONFIG_VERSION).$(GIT_HASH_COMMIT)
@@ -98,6 +99,7 @@ $(REQUIREMENTS_FUNCTIONS): $(REQUIREMENTS_FILES) $(REQUIREMENTS_TESTS_FILES)
 	@rm $@ -f
 	@echo -e $(patsubst %,-r % \\n,$(REQUIREMENTS_FILES)) > $@
 	@echo -e $(patsubst %,-r % \\n,$(REQUIREMENTS_TESTS_FILES)) >> $@
+	@echo -e $(patsubst %,-r % \\n,$(TERRAFORM_TESTING_REQUIREMENTS)) >> $@
 
 $(FUNCTION_ACTIVATE_PATH):
 	@echo -e "\e[32m==> Create virtual env $@\e[0m"
