@@ -1,5 +1,5 @@
 locals {
-  region = "ap-southeast-1"
+  region = "eu-west-3"
 }
 
 terraform {
@@ -7,10 +7,15 @@ terraform {
 
   backend "s3" {
     region         = "ap-southeast-1"
-    bucket         = "programmableproductioncom-dev-shopper-state"
-    key            = "testing/tiingo_fetcher/terraform.tfstate"
-    dynamodb_table = "programmableproductioncom-dev-shopper-state-lock"
+    bucket         = "hwcom-prod-terraform-master-state"
+    key            = "shopper/tiingo/ci_testing/terraform.tfstate"
+    dynamodb_table = "hwcom-prod-terraform-master-state-lock"
     encrypt        = true
+
+//    bucket         = "programmableproductioncom-dev-shopper-state"
+//    key            = "testing/tiingo_fetcher/terraform.tfstate"
+//    dynamodb_table = "programmableproductioncom-dev-shopper-state-lock"
+//    encrypt        = true
   }
 }
 
@@ -50,7 +55,6 @@ module "tiingo_fetcher" {
 variable "module_version" {
   type = "string"
   description = "version of the module"
-  default = "0.1.81f4b54"
  }
 
 variable "tiingo_api_key" {
