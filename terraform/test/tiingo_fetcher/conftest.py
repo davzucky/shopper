@@ -9,6 +9,9 @@ full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terraform"
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_terraform(version, terraform_bin_path):
+    print(os.environ.get("AWS_SECRET_ACCESS_KEY"))
+    print(os.environ.get("AWS_ACCESS_KEY_ID"))
+
     tf = terraform.Terraform(
         working_dir=full_path, terraform_bin_path=terraform_bin_path
     )

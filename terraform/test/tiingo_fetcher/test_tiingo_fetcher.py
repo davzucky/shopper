@@ -38,7 +38,7 @@ def test_output_contain_s3_bucket_name_init_with_tiingo_fetch(terraform_output):
 def test_lambda_function_check_setup(terraform_output):
     lambda_function_name = terraform_output["lambda_function_name"]["value"]
     region = terraform_output["region"]["value"]
-    
+
     client = boto3.client("lambda", region_name=region)
     lambda_configuration = client.get_function_configuration(
         FunctionName=lambda_function_name
