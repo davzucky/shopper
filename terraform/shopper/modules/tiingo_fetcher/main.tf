@@ -11,7 +11,9 @@ resource "aws_lambda_function" "tiingo_fetcher_lambda_function" {
   runtime       = "python3.7"
   source_code_hash = "${base64sha256(file("${local.zip_file_path}"))}"
   timeout = "60"
-  version = "${var.module_version}"
+  tags {
+    version = "${var.module_version}"
+  }
 
   environment {
     variables {
