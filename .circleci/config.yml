@@ -37,12 +37,17 @@ jobs:
           name: build lambda packages
           command: |
             make create-packages
+      - persist_to_workspace:
+          root: .\terraform\shopper
+          paths:
+            - .\terraform\shopper\packages
+            - .\terraform\shopper\variable.version.tf
 
   test-terraform-modules:
     executor: lambda-executor
     steps:
       - attach_workspace:
-          at: .
+          at: .\terraform\shopper
       - run:
           name: test terraform modules
           command: |
