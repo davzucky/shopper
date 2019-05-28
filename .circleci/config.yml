@@ -49,6 +49,10 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: check folder content
+          command: |
+            ls -ali terraform/shopper/packages/
+      - run:
           name: test terraform modules
           command: |
             make test-terraform-modules
