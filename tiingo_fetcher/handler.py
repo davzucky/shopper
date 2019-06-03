@@ -13,8 +13,8 @@ from tiingo import TiingoClient
 from .os_helpers import get_env_variable, get_env_variable_or_default
 from .message import get_messages_from_records
 
-AWS_S3_BUCKET = "aws_s3_bucket"
-AWS_REGION = "aws_region"
+AWS_S3_BUCKET = "AWS_S3_BUCKET"
+AWS_REGION = "AWS_REGION"
 
 config = {}
 config["session"] = True
