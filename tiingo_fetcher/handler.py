@@ -1,8 +1,6 @@
 import csv
 import io
 import logging
-import os
-import sys
 import tempfile
 from collections import OrderedDict
 from typing import Dict, Any, Iterator, List
@@ -11,6 +9,7 @@ import boto3
 from botocore.exceptions import ClientError
 from tiingo import TiingoClient
 
+from .os_helpers import get_env_variable
 from .message import get_messages_from_records
 
 logger = logging.getLogger()
@@ -59,15 +58,6 @@ def save_to_csv_file(
         writer = csv.DictWriter(output, fieldnames=csv_columns, quoting=csv.QUOTE_NONE)
         writer.writeheader()
         writer.writerows(input_data)
-
-
-def get_env_variable(env_var_name: str):
-    variable = os.environ.get(env_var_name, "")
-    if not variable:
-        logger.error("The environement variable {} is not set.".format(env_var_name))
-        sys.exit(-1)
-
-    return variable
 
 
 def upload_file_from_local_to_S3(region_name, bucket_name, file_key, tmp_path) -> None:
