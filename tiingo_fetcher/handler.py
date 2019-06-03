@@ -6,14 +6,12 @@ from collections import OrderedDict
 from typing import Dict, Any, Iterator, List
 
 import boto3
+import daiquiri
 from botocore.exceptions import ClientError
 from tiingo import TiingoClient
 
-from .os_helpers import get_env_variable
+from .os_helpers import get_env_variable, get_env_variable_or_default
 from .message import get_messages_from_records
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 AWS_S3_BUCKET = "aws_s3_bucket"
 AWS_REGION = "aws_region"
@@ -21,6 +19,13 @@ AWS_REGION = "aws_region"
 config = {}
 config["session"] = True
 client = TiingoClient(config)
+
+
+daiquiri.setup(
+    level=logging.getLevelName(
+        get_env_variable_or_default("LAMBDA_LOGGING_LEVEL", "INFO")
+    )
+)
 
 
 def get_tiingo_market_data(
