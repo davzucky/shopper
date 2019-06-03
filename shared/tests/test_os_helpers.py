@@ -20,7 +20,7 @@ def test_get_env_variable_return_value_when_exist_in_env(monkeypatch):
 def test_get_env_variable_or_default_return_expected_value(monkeypatch):
     key = "USER"
     value = "TestingUser"
-    default_value = 'unknown'
+    default_value = "unknown"
     monkeypatch.setenv(key, value)
 
     return_value = get_env_variable_or_default(key, default_value)
