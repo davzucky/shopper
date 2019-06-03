@@ -1,15 +1,10 @@
-import datetime
-
-import boto3
 import os
 from contextlib import contextmanager
+
+import boto3
 from moto import mock_s3
 
-from ..aws_helpers import (
-    download_file_from_S3_to_temp,
-    # append_ohlc_to_file,
-    # get_ohcl_row_str,
-)
+from ..aws_helpers import download_file_from_S3_to_temp
 
 BUCKET = "some-bucket"
 REGION_NAME = "us-east-1"
@@ -37,6 +32,7 @@ def test_can_download_file_from_S3_to_temp_and_have_same_content(tmpdir):
 
         file_content = open(tmp_path, "r").read()
         assert file_content == SAMPLE_CONTENT
+
 
 #
 # def test_add_ohlc_data_to_file(tmpdir):
@@ -88,6 +84,7 @@ def test_can_download_file_from_S3_to_temp_and_have_same_content(tmpdir):
 #
 #     assert file_content == "{}{}".format(SAMPLE_CONTENT, new_row_str)
 #
+
 
 def test_can_save_and_retrive_file_from_s3():
     with do_test_setup():
