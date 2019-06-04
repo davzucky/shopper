@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 import daiquiri
 from dataclass_csv import DataclassReader
@@ -42,8 +42,8 @@ class TiingoTicker:
 
 @dataclass()
 class Filter(DataClassJsonMixin):
-    exchange: str = None
-    asset_type: str = None
+    exchange: Optional[str] = None
+    asset_type: Optional[str] = None
 
     def filter_out(self, tiingo_ticker: TiingoTicker) -> bool:
         return (
