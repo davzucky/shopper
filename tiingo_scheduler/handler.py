@@ -1,7 +1,22 @@
+import logging
 from dataclasses import dataclass
 from typing import Dict, Any
 
+import daiquiri
 from dataclass_csv import DataclassReader
+from dataclasses_json import DataClassJsonMixin
+
+from .os_helpers import get_env_variable_or_default
+
+daiquiri.setup(
+    level=logging.getLevelName(
+        get_env_variable_or_default("LAMBDA_LOGGING_LEVEL", "INFO")
+    )
+)
+
+AWS_REGION = "AWS_REGION"
+AWS_S3_BUCKET = "AWS_S3_BUCKET"
+TIINGO_TICKERS_FILE = "TIINGO_TICKERS_FILE"
 
 
 def get_tiingo_tickers(tiingo_ticker_path: str):
@@ -23,6 +38,17 @@ class TiingoTicker:
     exchange: str = "Unknown"
     start_date: str = "1800-01-01"
     end_date: str = "2800-01-01"
+
+
+@dataclass()
+class Filter(DataClassJsonMixin):
+    exchange: str = None
+    asset_type: str = None
+
+    def filter_out(self, tiingo_ticker: TiingoTicker) -> bool:
+        return (
+            (self.asset_type is None) or (self.asset_type == tiingo_ticker.asset_type)
+        ) and ((self.exchange is None) or (self.exchange == tiingo_ticker.exchange))
 
 
 def handler(event: Dict[str, Any], context):
