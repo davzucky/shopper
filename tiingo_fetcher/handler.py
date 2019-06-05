@@ -5,13 +5,12 @@ import tempfile
 from collections import OrderedDict
 from typing import Dict, Any, Iterator, List
 
-import boto3
 import daiquiri
-from botocore.exceptions import ClientError
 from tiingo import TiingoClient
 
-from .os_helpers import get_env_variable, get_env_variable_or_default
+from .aws_helpers import upload_file_from_local_to_S3
 from .message import get_messages_from_records
+from .os_helpers import get_env_variable, get_env_variable_or_default
 
 AWS_S3_BUCKET = "AWS_S3_BUCKET"
 AWS_REGION = "AWS_REGION"
@@ -63,17 +62,6 @@ def save_to_csv_file(
         writer = csv.DictWriter(output, fieldnames=csv_columns, quoting=csv.QUOTE_NONE)
         writer.writeheader()
         writer.writerows(input_data)
-
-
-def upload_file_from_local_to_S3(region_name, bucket_name, file_key, tmp_path) -> None:
-    s3 = boto3.client("s3", region_name=region_name)
-    try:
-        s3.upload_file(file_key, bucket_name, tmp_path)
-    except ClientError as e:
-        if e.response["Error"]["Code"] == "404":
-            print("The object does not exist.")
-        else:
-            raise
 
 
 def handler(event: Dict[str, Any], context):
