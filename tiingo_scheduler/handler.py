@@ -76,7 +76,8 @@ def handler(event: str, context):
         tiingo_filter.filter_out, get_tiingo_tickers(tiingo_tickers_path)
     ):
         queue.send_message(
+            MessageDeduplicationId=tiingo_ticker.ticker,
             MessageBody=Message(
                 tiingo_ticker.ticker, f"market_data/{tiingo_ticker}/1d/data.csv"
-            ).to_json()
+            ).to_json(),
         )
