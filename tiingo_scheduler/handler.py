@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import tempfile
@@ -68,16 +69,18 @@ def handler(event: str, context):
     tiingo_tickers_path = os.path.join(tempfile.gettempdir(), "tiingo_tickers.csv")
     download_file_from_S3_to_temp(region, bucket, tiingo_tickers, tiingo_tickers_path)
 
-    tiingo_filter = Filter.from_json(event)
+    tiingo_filters = Filter.schema().load(json.loads(event), many=True)
     sqs = boto3.resource("sqs", region_name=region)
     queue = sqs.get_queue_by_name(QueueName=sqs_queue_name)
 
-    for tiingo_ticker in filter(
-        tiingo_filter.filter_out, get_tiingo_tickers(tiingo_tickers_path)
-    ):
-        queue.send_message(
-            MessageDeduplicationId=tiingo_ticker.ticker,
-            MessageBody=Message(
-                tiingo_ticker.ticker, f"market_data/{tiingo_ticker}/1d/data.csv"
-            ).to_json(),
-        )
+    for tiingo_filter in tiingo_filters:
+        for tiingo_ticker in filter(
+            tiingo_filter.filter_out, get_tiingo_tickers(tiingo_tickers_path)
+        ):
+            queue.send_message(
+                MessageDeduplicationId=tiingo_ticker.ticker,
+                MessageBody=Message(
+                    tiingo_ticker.ticker,
+                    f"market_data/{tiingo_ticker.ticker}/1d/data.csv",
+                ).to_json(),
+            )

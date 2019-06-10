@@ -1,6 +1,9 @@
+from typing import List
+
 import boto3
 import pytest
 
+from ..message import Message
 from ..handler import (
     AWS_S3_BUCKET,
     AWS_REGION,
@@ -22,17 +25,29 @@ message_2 = (
 
 
 @pytest.mark.parametrize(
-    "tiingo_tickers_csv_content,filter,queue_size",
+    "tiingo_tickers_csv_content,filter,tickers",
     [
-        (header, "{}", 0),
-        (f"{header}\n{message_1}", "{}", 2),
-        (f"{header}\n{message_2}", '{"exchange": "NYSE", "asset_type": "ETF"}', 1),
-        (f"{header}\n{message_2}\n{message_1}", "{}", 5),
-        (f"{header}\n{message_2}\n{message_1}", '{"asset_type": "Stock"}', 3),
+        (header, "[]", []),
+        (f"{header}\n{message_1}", "[{}]", ["000001", "000002"]),
+        (
+            f"{header}\n{message_2}",
+            '[{"exchange": "NYSE", "asset_type": "ETF"}]',
+            ["PZA"],
+        ),
+        (
+            f"{header}\n{message_2}\n{message_1}",
+            "[{}]",
+            ["000001", "000002", "PZA", "PZA1", "PZAAX"],
+        ),
+        (
+            f"{header}\n{message_2}\n{message_1}",
+            '[{"asset_type": "Stock"}, {"asset_type": "ETF"}]',
+            ["000001", "000002", "PZA", "PZA1"],
+        ),
     ],
 )
 def test_number_of_message_sent(
-    monkeypatch, tiingo_tickers_csv_content: str, filter: str, queue_size: int
+    monkeypatch, tiingo_tickers_csv_content: str, filter: str, tickers: List[str]
 ):
     region = "us-east-1"
     bucket_name = "market_data"
@@ -56,7 +71,7 @@ def test_number_of_message_sent(
 
             messages = set()
 
-            for i in range(0, queue_size):
+            for i in range(0, len(tickers)):
                 msg_list = queue.receive_messages(
                     VisibilityTimeout=1, MaxNumberOfMessages=10, WaitTimeSeconds=5
                 )
@@ -64,4 +79,12 @@ def test_number_of_message_sent(
                     messages.add(msg.body)
                     msg.delete()
 
-            assert len(messages) == queue_size
+            result_messages = set(
+                [
+                    Message(ticker, f"market_data/{ticker}/1d/data.csv").to_json()
+                    for ticker in tickers
+                ]
+            )
+
+            assert len(messages) == len(tickers)
+            assert messages == result_messages
