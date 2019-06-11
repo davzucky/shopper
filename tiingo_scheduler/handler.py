@@ -19,6 +19,8 @@ daiquiri.setup(
     )
 )
 
+logger = daiquiri.getLogger(__name__)
+
 AWS_REGION = "AWS_REGION"
 AWS_S3_BUCKET = "AWS_S3_BUCKET"
 TIINGO_FETCHER_QUEUE = "TIINGO_FETCHER_QUEUE"
@@ -66,20 +68,25 @@ def handler(filters: List[Dict[str, str]], context):
     )
 
     tiingo_filters = Filter.schema().load(filters, many=True)
+    logger.info(f"number of fitlers : {len(tiingo_filters)}")
+
     tiingo_tickers_path = os.path.join(tempfile.gettempdir(), "tiingo_tickers.csv")
     download_file_from_S3_to_temp(region, bucket, tiingo_tickers, tiingo_tickers_path)
 
     sqs = boto3.resource("sqs", region_name=region)
     queue = sqs.get_queue_by_name(QueueName=sqs_queue_name)
 
+    nb_msg_send = 0
     for tiingo_filter in tiingo_filters:
+        logger.debug(f"run filter: {tiingo_filter}")
+
         for tiingo_ticker in filter(
             tiingo_filter.filter_out, get_tiingo_tickers(tiingo_tickers_path)
         ):
-            queue.send_message(
-                MessageDeduplicationId=tiingo_ticker.ticker,
-                MessageBody=Message(
-                    tiingo_ticker.ticker,
-                    f"market_data/{tiingo_ticker.ticker}/1d/data.csv",
-                ).to_json(),
+            nb_msg_send += 1
+            message = Message(
+                tiingo_ticker.ticker, f"market_data/{tiingo_ticker.ticker}/1d/data.csv"
             )
+            logger.debug(f"send -> {message}")
+            queue.send_message(MessageBody=message.to_json())
+    logger.info(f"nb message sent: {nb_msg_send}")
