@@ -8,6 +8,7 @@ import boto3
 import daiquiri
 from dataclass_csv import DataclassReader
 from dataclasses_json import DataClassJsonMixin
+from more_itertools import grouper
 
 from .aws_helpers import download_file_from_S3_to_temp
 from .message import Message
@@ -55,8 +56,10 @@ class Filter(DataClassJsonMixin):
 
     def filter_out(self, tiingo_ticker: TiingoTicker) -> bool:
         return (
-            (self.asset_type is None) or (self.asset_type == tiingo_ticker.asset_type)
-        ) and ((self.exchange is None) or (self.exchange == tiingo_ticker.exchange))
+                       (self.asset_type is None) or (
+                           self.asset_type == tiingo_ticker.asset_type)
+               ) and ((self.exchange is None) or (
+                    self.exchange == tiingo_ticker.exchange))
 
 
 def handler(filters: List[Dict[str, str]], context):
@@ -80,13 +83,19 @@ def handler(filters: List[Dict[str, str]], context):
     for tiingo_filter in tiingo_filters:
         logger.debug(f"run filter: {tiingo_filter}")
 
-        for tiingo_ticker in filter(
-            tiingo_filter.filter_out, get_tiingo_tickers(tiingo_tickers_path)
-        ):
+        for tiingo_tickers in grouper(10, filter(
+                tiingo_filter.filter_out, get_tiingo_tickers(tiingo_tickers_path)
+        )):
             nb_msg_send += 1
-            message = Message(
-                tiingo_ticker.ticker, f"market_data/{tiingo_ticker.ticker}/1d/data.csv"
-            )
-            logger.debug(f"send -> {message}")
-            queue.send_message(MessageBody=message.to_json())
+            messages = [
+
+                {
+                    'Id': tiingo_ticker.ticker,
+                    'MessageBody': Message(
+                        tiingo_ticker.ticker,
+                        f"market_data/{tiingo_ticker.ticker}/1d/data.csv"
+                    ).to_json()} for tiingo_ticker in tiingo_tickers if
+                tiingo_ticker is not None]
+            logger.debug(f"send -> {messages}")
+            queue.send_messages(Entries=messages)
     logger.info(f"nb message sent: {nb_msg_send}")
