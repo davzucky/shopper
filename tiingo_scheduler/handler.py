@@ -1,9 +1,8 @@
-import json
 import logging
 import os
 import tempfile
 from dataclasses import dataclass
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Dict, List
 
 import boto3
 import daiquiri
@@ -58,7 +57,7 @@ class Filter(DataClassJsonMixin):
         ) and ((self.exchange is None) or (self.exchange == tiingo_ticker.exchange))
 
 
-def handler(event: str, context):
+def handler(filters: List[Dict[str, str]], context):
     region = get_env_variable(AWS_REGION)
     bucket = get_env_variable(AWS_S3_BUCKET)
     sqs_queue_name = get_env_variable(TIINGO_FETCHER_QUEUE)
@@ -66,10 +65,10 @@ def handler(event: str, context):
         TIINGO_TICKERS_FILE, "tiingo/tickers.csv"
     )
 
+    tiingo_filters = Filter.schema().load(filters, many=True)
     tiingo_tickers_path = os.path.join(tempfile.gettempdir(), "tiingo_tickers.csv")
     download_file_from_S3_to_temp(region, bucket, tiingo_tickers, tiingo_tickers_path)
 
-    tiingo_filters = Filter.schema().load(json.loads(event), many=True)
     sqs = boto3.resource("sqs", region_name=region)
     queue = sqs.get_queue_by_name(QueueName=sqs_queue_name)
 

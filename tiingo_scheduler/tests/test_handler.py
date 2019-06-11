@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 import boto3
 import pytest
@@ -27,27 +27,30 @@ message_2 = (
 @pytest.mark.parametrize(
     "tiingo_tickers_csv_content,filter,tickers",
     [
-        (header, "[]", []),
-        (f"{header}\n{message_1}", "[{}]", ["000001", "000002"]),
+        (header, [], []),
+        (f"{header}\n{message_1}", [{}], ["000001", "000002"]),
         (
             f"{header}\n{message_2}",
-            '[{"exchange": "NYSE", "asset_type": "ETF"}]',
+            [{"exchange": "NYSE", "asset_type": "ETF"}],
             ["PZA"],
         ),
         (
             f"{header}\n{message_2}\n{message_1}",
-            "[{}]",
+            [{}],
             ["000001", "000002", "PZA", "PZA1", "PZAAX"],
         ),
         (
             f"{header}\n{message_2}\n{message_1}",
-            '[{"asset_type": "Stock"}, {"asset_type": "ETF"}]',
+            [{"asset_type": "Stock"}, {"asset_type": "ETF"}],
             ["000001", "000002", "PZA", "PZA1"],
         ),
     ],
 )
 def test_number_of_message_sent(
-    monkeypatch, tiingo_tickers_csv_content: str, filter: str, tickers: List[str]
+    monkeypatch,
+    tiingo_tickers_csv_content: str,
+    filter: List[Dict[str, str]],
+    tickers: List[str],
 ):
     region = "us-east-1"
     bucket_name = "market_data"
