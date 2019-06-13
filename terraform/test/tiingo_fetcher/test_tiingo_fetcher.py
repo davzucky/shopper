@@ -1,6 +1,5 @@
 import os
 import time
-import uuid
 
 import boto3
 import botocore
