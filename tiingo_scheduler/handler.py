@@ -28,7 +28,7 @@ TIINGO_FETCHER_QUEUE = "TIINGO_FETCHER_QUEUE"
 TIINGO_TICKERS_FILE = "TIINGO_TICKERS_FILE"
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class TiingoTicker:
     ticker: str
     asset_type: str
@@ -56,10 +56,8 @@ class Filter(DataClassJsonMixin):
 
     def filter_out(self, tiingo_ticker: TiingoTicker) -> bool:
         return (
-                       (self.asset_type is None) or (
-                           self.asset_type == tiingo_ticker.asset_type)
-               ) and ((self.exchange is None) or (
-                    self.exchange == tiingo_ticker.exchange))
+            (self.asset_type is None) or (self.asset_type == tiingo_ticker.asset_type)
+        ) and ((self.exchange is None) or (self.exchange == tiingo_ticker.exchange))
 
 
 def handler(filters: List[Dict[str, str]], context):
@@ -71,7 +69,7 @@ def handler(filters: List[Dict[str, str]], context):
     )
 
     tiingo_filters = Filter.schema().load(filters, many=True)
-    logger.info(f"number of fitlers : {len(tiingo_filters)}")
+    logger.info(f"Number of filters : {len(tiingo_filters)}")
 
     tiingo_tickers_path = os.path.join(tempfile.gettempdir(), "tiingo_tickers.csv")
     download_file_from_S3_to_temp(region, bucket, tiingo_tickers, tiingo_tickers_path)
@@ -82,20 +80,23 @@ def handler(filters: List[Dict[str, str]], context):
     nb_msg_send = 0
     for tiingo_filter in tiingo_filters:
         logger.debug(f"run filter: {tiingo_filter}")
-
-        for tiingo_tickers in grouper(10, filter(
-                tiingo_filter.filter_out, get_tiingo_tickers(tiingo_tickers_path)
-        )):
-            nb_msg_send += 1
+        tickers = set(
+            filter(tiingo_filter.filter_out, get_tiingo_tickers(tiingo_tickers_path))
+        )
+        for tiingo_tickers in grouper(10, tickers):
+            nb_msg_send += len(tiingo_tickers)
             messages = [
-
                 {
-                    'Id': tiingo_ticker.ticker,
-                    'MessageBody': Message(
+                    "Id": tiingo_ticker.ticker,
+                    "MessageBody": Message(
                         tiingo_ticker.ticker,
-                        f"market_data/{tiingo_ticker.ticker}/1d/data.csv"
-                    ).to_json()} for tiingo_ticker in tiingo_tickers if
-                tiingo_ticker is not None]
+                        f"market_data/{tiingo_ticker.ticker}/1d/data.csv",
+                    ).to_json(),
+                }
+                for tiingo_ticker in tiingo_tickers
+                if tiingo_ticker is not None
+            ]
             logger.debug(f"send -> {messages}")
             queue.send_messages(Entries=messages)
-    logger.info(f"nb message sent: {nb_msg_send}")
+
+    logger.info(f"Numbers of messages sent: {nb_msg_send}")

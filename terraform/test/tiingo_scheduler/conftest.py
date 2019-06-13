@@ -9,39 +9,28 @@ full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terraform"
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_terraform(version, terraform_bin_path):
-    print(os.environ.get("AWS_SECRET_ACCESS_KEY"))
-    print(os.environ.get("AWS_ACCESS_KEY_ID"))
-
     tf = terraform.Terraform(
         working_dir=full_path, terraform_bin_path=terraform_bin_path
     )
 
+    tiingo_tickers_csv = "static/tiingo_tickers.csv"
     tf.init()
     ret_code, out, err = tf.apply(
         skip_plan=True,
-        var={
-            "module_version": version,
-            "tiingo_api_key": os.environ.get("TIINGO_API_KEY"),
-        },
+        var={"module_version": version, "tiingo_tickers_path": tiingo_tickers_csv},
     )
 
     if ret_code != 0:
         print(err)
         ret_code, out, err = tf.destroy(
-            var={
-                "module_version": version,
-                "tiingo_api_key": os.environ.get("TIINGO_API_KEY"),
-            }
+            var={"module_version": version, "tiingo_tickers_path": tiingo_tickers_csv}
         )
         raise Exception("Error applying terraform. Error \n {}".format(err))
 
     yield
 
     ret_code, out, err = tf.destroy(
-        var={
-            "module_version": version,
-            "tiingo_api_key": os.environ.get("TIINGO_API_KEY"),
-        }
+        var={"module_version": version, "tiingo_tickers_path": tiingo_tickers_csv}
     )
 
     if ret_code != 0:
