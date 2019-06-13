@@ -1,4 +1,4 @@
-boto3==1.9.142
+boto3==1.9.167
 dataclasses-json==0.2.2
 dataclass-csv==1.1.2
 daiquiri==1.5.0
