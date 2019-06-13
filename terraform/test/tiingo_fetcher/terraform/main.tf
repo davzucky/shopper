@@ -3,26 +3,12 @@ locals {
 }
 
 terraform {
-  required_version = ">= 0.11.3"
-
-  backend "s3" {
-    region         = "ap-southeast-1"
-    bucket         = "hwcom-prod-terraform-master-state"
-    key            = "shopper/tiingo/ci_testing/terraform.tfstate"
-    dynamodb_table = "hwcom-prod-terraform-master-state-lock"
-    encrypt        = true
-
-//    bucket         = "programmableproductioncom-dev-shopper-state"
-//    key            = "testing/tiingo_fetcher/terraform.tfstate"
-//    dynamodb_table = "programmableproductioncom-dev-shopper-state-lock"
-//    encrypt        = true
-  }
+  required_version = ">= 0.11.14"
 }
 
 provider "aws" {
   region = "${local.region}"
   version = "~> 2.0"
-
 }
 
 resource "random_string" "test" {

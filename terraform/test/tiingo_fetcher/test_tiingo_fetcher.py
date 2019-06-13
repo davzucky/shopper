@@ -77,7 +77,7 @@ def test_lambda_trigger_is_sqs(clean_aws_resources, terraform_output, tmpdir):
 
     s3 = boto3.resource("s3", region_name=region)  # type: botostubs.S3
 
-    max_try = 30
+    max_try = 40
     for i in range(max_try + 1):
         try:
             s3.Object(bucket_name, save_path).load()
@@ -97,8 +97,9 @@ def test_lambda_trigger_is_sqs(clean_aws_resources, terraform_output, tmpdir):
                 raise
         else:
             break
+    # sleep 2s to ensure the file is fully saved to s3
 
-    local_path = os.path.join(tmpdir.dirname, str(uuid.uuid4()))
+    local_path = os.path.join(tmpdir.dirname, "appl.csv")
     s3.Bucket(bucket_name).download_file(save_path, local_path)
 
     with open(local_path, "r") as f:
