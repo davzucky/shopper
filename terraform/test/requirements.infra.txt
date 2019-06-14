@@ -1,2 +1,2 @@
-python_terraform
-botostubs
+python_terraform==0.10.0
+botostubs==0.9.1.9.167
