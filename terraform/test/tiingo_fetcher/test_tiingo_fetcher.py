@@ -86,7 +86,7 @@ def test_lambda_trigger_is_sqs(clean_aws_resources, terraform_output, tmpdir):
 
     s3 = boto3.resource("s3", region_name=region)  # type: botostubs.S3
 
-    max_try = 60
+    max_try = 120
     for i in range(max_try + 1):
         try:
             s3.Object(bucket_name, bucker_file_key).load()

@@ -2,16 +2,15 @@ import os
 from typing import Dict
 
 import pytest
-import python_terraform as terraform
+
+from ..python_terraform import Terraform
 
 full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terraform")
 
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_terraform(version, terraform_bin_path):
-    tf = terraform.Terraform(
-        working_dir=full_path, terraform_bin_path=terraform_bin_path
-    )
+    tf = Terraform(working_dir=full_path, terraform_bin_path=terraform_bin_path)
 
     tiingo_tickers_csv = "static/tiingo_tickers.csv"
     tf.init()
@@ -40,9 +39,7 @@ def setup_terraform(version, terraform_bin_path):
 
 @pytest.fixture()
 def terraform_output(setup_terraform, terraform_bin_path) -> Dict[str, Dict[str, str]]:
-    tf = terraform.Terraform(
-        working_dir=full_path, terraform_bin_path=terraform_bin_path
-    )
+    tf = Terraform(working_dir=full_path, terraform_bin_path=terraform_bin_path)
     outputs = tf.output()
     if outputs is not None:
         return outputs
