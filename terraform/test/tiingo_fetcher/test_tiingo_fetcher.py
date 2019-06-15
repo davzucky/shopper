@@ -6,6 +6,7 @@ import botocore
 import botostubs
 import pytest
 
+from tiingo_fetcher.aws_helpers import download_file_from_S3_to_temp
 from .message import Message
 
 
@@ -50,6 +51,15 @@ def test_lambda_function_check_setup(terraform_output):
     ] == os.environ.get("TIINGO_API_KEY")
 
 
+def test_lambda_has_one_trigger_mapped_to(terraform_output):
+    function_name = terraform_output["lambda_function_name"]["value"]
+    region = terraform_output["region"]["value"]
+    lambda_client = boto3.client("lambda", region_name=region)  # type: botostubs.Lambda
+    lambda_tiingo = lambda_client.list_event_source_mappings(FunctionName=function_name)
+
+    assert len(lambda_tiingo["EventSourceMappings"]) == 1
+
+
 def test_lambda_deployement_values(terraform_output):
     function_name = terraform_output["lambda_function_name"]["value"]
     region = terraform_output["region"]["value"]
@@ -57,8 +67,8 @@ def test_lambda_deployement_values(terraform_output):
     lambda_tiingo = lambda_client.list_event_source_mappings(FunctionName=function_name)
 
     assert (
-        terraform_output["sqs_queue_name"]["value"]
-        in lambda_tiingo["EventSourceMappings"][0]["EventSourceArn"]
+        terraform_output["sqs_queue_arn"]["value"]
+        == lambda_tiingo["EventSourceMappings"][0]["EventSourceArn"]
     )
 
 
@@ -68,18 +78,18 @@ def test_lambda_trigger_is_sqs(clean_aws_resources, terraform_output, tmpdir):
     bucket_name = terraform_output["s3_bucket_name"]["value"]
 
     ticker_name = "AAPL"
-    save_path = "market_data/AAPL.US/1D/marketdata.csv"
+    bucker_file_key = "market_data/AAPL.US/1D/marketdata.csv"
 
     sqs = boto3.resource("sqs", region_name=region)  # type: botostubs.SQS
     queue = sqs.get_queue_by_name(QueueName=sqs_queue_name)
-    queue.send_message(MessageBody=Message(ticker_name, save_path).to_json())
+    queue.send_message(MessageBody=Message(ticker_name, bucker_file_key).to_json())
 
     s3 = boto3.resource("s3", region_name=region)  # type: botostubs.S3
 
-    max_try = 40
+    max_try = 60
     for i in range(max_try + 1):
         try:
-            s3.Object(bucket_name, save_path).load()
+            s3.Object(bucket_name, bucker_file_key).load()
         except botocore.exceptions.ClientError as e:
             if e.response["Error"]["Code"] == "404":
                 if i < max_try:
@@ -89,17 +99,16 @@ def test_lambda_trigger_is_sqs(clean_aws_resources, terraform_output, tmpdir):
                     # The object does not exist.
                     AssertionError(
                         e.response["Error"],
-                        "The file {} has not been saved to s3".format(save_path),
+                        "The file {} has not been saved to s3".format(bucker_file_key),
                     )
             else:
                 # Something else has gone wrong.
                 raise
         else:
             break
-    # sleep 2s to ensure the file is fully saved to s3
 
     local_path = os.path.join(tmpdir.dirname, "appl.csv")
-    s3.Bucket(bucket_name).download_file(save_path, local_path)
+    download_file_from_S3_to_temp(region, bucket_name, bucker_file_key, local_path)
 
     with open(local_path, "r") as f:
         lines = [l for l in f.readlines()]
