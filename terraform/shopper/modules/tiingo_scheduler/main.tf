@@ -9,14 +9,14 @@ resource "aws_lambda_function" "tiingo_scheduler_lambda_function" {
   filename      = "${local.zip_file_path}"
   role          = "${aws_iam_role.tiingo_scheduler_lambda.arn}"
   runtime       = "python3.7"
-  source_code_hash = "${base64sha256(file("${local.zip_file_path}"))}"
+  source_code_hash = filebase64sha256("${local.zip_file_path}")
   timeout = "300"
-  tags {
+  tags = {
     version = "${var.module_version}"
   }
 
   environment {
-    variables {
+    variables = {
       "AWS_S3_BUCKET" = "${var.s3_market_data_bucket}"
       "TIINGO_FETCHER_QUEUE" = "${var.trigger_sqs_arn}"
       "TIINGO_TICKERS_FILE" = "${var.tiingo_tickers_file_path}"
