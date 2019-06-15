@@ -4,14 +4,6 @@ locals {
 
 terraform {
   required_version = ">= 0.11.14"
-//
-//  backend "s3" {
-//    region         = "ap-southeast-1"
-//    bucket         = "hwcom-prod-terraform-master-state"
-//    key            = "shopper/tiingo_scheduler/ci_testing/terraform.tfstate"
-//    dynamodb_table = "hwcom-prod-terraform-master-state-lock"
-//    encrypt        = true
-//  }
 }
 
 provider "aws" {
@@ -21,11 +13,11 @@ provider "aws" {
 
 resource "random_string" "test" {
   # Generate a random id for each deployment
-  length           = 8
+  length = 8
   override_special = "-"
 }
 
-resource "aws_s3_bucket" "test_tiingo"{
+resource "aws_s3_bucket" "test_tiingo" {
   bucket = "market-data-${lower(random_string.test.result)}"
   region = "${local.region}"
 }
@@ -79,7 +71,6 @@ output "lambda_function_name" {
 output "lambda_function_arn" {
   value = "${module.tiingo_scheduler.lambda_arn}"
 }
-
 
 output "region" {
   value = "${local.region}"
