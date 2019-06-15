@@ -129,3 +129,5 @@ venv.bak/
 **/packages
 terraform/**/variable.version.tf
 /**/.terraform/
+*.tfstate
+*.tfstate.backup
