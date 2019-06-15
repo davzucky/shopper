@@ -4,5 +4,5 @@ resource "aws_sqs_queue" "bloomberg_fetch_queue" {
 }
 
 resource "aws_sqs_queue" "tiingo_fetcher_fetch_queue" {
-  name = "tiigo_fetcher_fetch"
+  name = "tiingo_fetcher_fetch"
 }
