@@ -73,7 +73,9 @@ REQUIREMENTS_FREEZE_FILES := $(subst  $(REQUIREMENTS_FILE_NAME),$(REQUIREMENTS_F
 REQUIREMENTS_TESTS_FILES := $(shell find -name $(REQUIREMENTS_TESTS_FILE_NAME))
 REQUIREMENTS_TESTS_FREEZE_FILES := $(subst  $(REQUIREMENTS_TESTS_FILE_NAME),$(REQUIREMENTS_TESTS_FREEZE_FILE_NAME),$(REQUIREMENTS_TESTS_FILES))
 REQUIREMENTS_PKG_FREEZE_FILES := $(subst  $(REQUIREMENTS_FILE_NAME),$(REQUIREMENTS_PKG_FREEZE_FILE_NAME),$(REQUIREMENTS_FILES))
-PYTESTS_RESULT_FILES := $(subst  $(REQUIREMENTS_FILE_NAME),$(PYTESTS_RESULT_FILE_NAME),$(REQUIREMENTS_FILES))
+
+PYTEST_RESULT_FOLDER = ./results
+PYTESTS_RESULT_FILES := $(subst ./, $(PYTEST_RESULT_FOLDER)/, $(subst  $(REQUIREMENTS_FILE_NAME),$(PYTESTS_RESULT_FILE_NAME),$(REQUIREMENTS_FILES)))
 SETUP_CFG_FILES := $(subst  $(REQUIREMENTS_FILE_NAME),$(SETUP_CFG_FILE_NAME),$(REQUIREMENTS_FILES))
 FUNCTION_ACTIVATE_PATH = $(subst  $(REQUIREMENTS_FILE_NAME),$(VENV_ACTIVATE_PATH),$(REQUIREMENTS_FILES))
 FUNCTION_PKG_ACTIVATE_PATH = $(subst  $(REQUIREMENTS_FILE_NAME),$(VENV_PKG_ACTIVATE_PATH),$(REQUIREMENTS_FILES))
@@ -187,16 +189,19 @@ $(SETUP_CFG_FILES): $(SETUP_CFG_FILE_NAME)
 	@echo -e "\e[32m==> Copy $< to $@ \e[0m"
 	@cp $< $@
 
+#  $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))%
 define Create_Result_File
-$(1): $$(filter $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))%,$$(PROJECT_PYTHON_FILES)) \
-	$$(filter $$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))%,$$(FUNCTION_ACTIVATE_PATH)) \
-	$$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))$(SETUP_CFG_FILE_NAME) \
-	$$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))$(REQUIREMENTS_FREEZE_FILE_NAME) \
-	$$(subst $$(PYTESTS_RESULT_FILE_NAME),,$(1))$(REQUIREMENTS_TESTS_FREEZE_FILE_NAME)
+$(1): $$(filter $$(shell basename $$(shell dirname $(1)))%,$$(PROJECT_PYTHON_FILES)) \
+	$$(filter $$(shell basename $$(shell dirname $(1)))%,$$(FUNCTION_ACTIVATE_PATH)) \
+	$(PYTEST_RESULT_FOLDER)/.touch \
+	$$(shell basename $$(shell dirname $(1)))/$(SETUP_CFG_FILE_NAME) \
+	$$(shell basename $$(shell dirname $(1)))/$(REQUIREMENTS_FREEZE_FILE_NAME) \
+	$$(shell basename $$(shell dirname $(1)))/$(REQUIREMENTS_TESTS_FREEZE_FILE_NAME)
 	@echo -e "\e[32m==> Test $$@ $$(@D)\e[0m"
-	@cd $$(@D) &&\
+	@mkdir -p $$(shell dirname $(1))
+	@cd $$(shell basename $$(shell dirname $(1))) &&\
 	 source $(VENV_ACTIVATE_PATH) &&\
-	 pytest -m "not terraform_unittest" --html=$$(@F) $(PYTEST_ARGUMENTS) ./tests
+	 pytest -m "not terraform_unittest" --html=$$(abspath $(1)) --junitxml=$$(abspath $$(subst html,xml,$(1)))  $(PYTEST_ARGUMENTS) ./tests
 endef
 $(foreach result_file_path,$(PYTESTS_RESULT_FILES),$(eval $(call Create_Result_File,$(result_file_path))))
 
@@ -205,6 +210,10 @@ $(PYTESTS_RESULT_FILE_NAME): $(MASTER_ACTIVATE_PATH) $(PROJECT_PYTHON_FILES) $(S
 	@source $(MASTER_ACTIVATE_PATH) && \
 	 pytest -m "not terraform_unittest" --html=$@ $(PYTEST_ARGUMENTS) .
 
+$(PYTEST_RESULT_FOLDER)/.touch:
+	@echo -e "\e[32m==> Create ouput package folder $$@ $$(@D)\e[0m"
+	@mkdir $(PYTEST_RESULT_FOLDER)
+	@touch $@
 
 ######################################################################################
 ###############           Create lambda package              #########################
@@ -336,21 +345,24 @@ test-terraform-modules: $(TERRAFORM_PYTEST_RESULT) ## Test all module terraform 
 	@echo -e "\e[32m==> Test module\e[0m"
 
 print-value:
-	@echo $(TERRAFORM_BINARY_VERSION_FILE)
-	@echo $(TERRAFORM_VERSION)
-	@echo $(TERRAFORM_URL)
-	@echo $(TERRAFORM_TEMP_ZIP)
-	@echo $(TERRAFORM_BINARY_VERSION_FILE)
-	@echo $(TERRAFORM_BINARY_PATH)
-
-	@echo $(filter $(subst $(PYTESTS_RESULT_FILE_NAME),,./lambda_function2/$(PYTESTS_RESULT_FILE_NAME))%,$(PROJECT_PYTHON_FILES))
-	@echo $(subst $(PYTESTS_RESULT_FILE_NAME),,$(PYTESTS_RESULT_FILES))
-	@echo $(REQUIREMENTS_FREEZE_FILE_NAME)
-	@echo $(REQUIREMENTS_FILE_NAME)
-	@echo $(REQUIREMENTS_FREEZE_FILES)
-	@echo $(VERSION)
-	@echo $(LAMBDA_FUNCTIONS)
-	@echo $(LAMBDA_PKG_ZIPS)
+	$(foreach v,                                        \
+	  $(filter-out $(VARS_OLD) VARS_OLD,$(.VARIABLES)), \
+	  $(info $(v) = $($(v))))
+#	@echo $(TERRAFORM_BINARY_VERSION_FILE)
+#	@echo $(TERRAFORM_VERSION)
+#	@echo $(TERRAFORM_URL)
+#	@echo $(TERRAFORM_TEMP_ZIP)
+#	@echo $(TERRAFORM_BINARY_VERSION_FILE)
+#	@echo $(TERRAFORM_BINARY_PATH)
+#
+#	@echo $(filter $(subst $(PYTESTS_RESULT_FILE_NAME),,./lambda_function2/$(PYTESTS_RESULT_FILE_NAME))%,$(PROJECT_PYTHON_FILES))
+#	@echo $(subst $(PYTESTS_RESULT_FILE_NAME),,$(PYTESTS_RESULT_FILES))
+#	@echo $(REQUIREMENTS_FREEZE_FILE_NAME)
+#	@echo $(REQUIREMENTS_FILE_NAME)
+#	@echo $(REQUIREMENTS_FREEZE_FILES)
+#	@echo $(VERSION)
+#	@echo $(LAMBDA_FUNCTIONS)
+#	@echo $(LAMBDA_PKG_ZIPS)
 
 create-packages: $(TERRAFORM_VERSION_FILE)  ## Create all the packages
 	@echo -e "\e[32m==> Create packages \e[0m"

@@ -24,9 +24,8 @@ jobs:
           root: .
           paths:
             - .
-      - store_artifacts:
-          path: pytest.report.html
-          destination: pytest.report.html
+      - store_test_results:
+          path: result
 
   build-lambda-packages:
     executor: lambda-executor
