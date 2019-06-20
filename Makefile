@@ -228,7 +228,7 @@ $(OUTPUT_PKG_PATH)/$(VERSION):
 	 fi
 	@touch $@
 
-$(LAMBDA_PKG_ZIPS): ./$(OUTPUT_PKG_PATH)/%.$(VERSION).zip: ./%/$(VENV_PKG_ACTIVATE_PATH) ./%/$(PYTESTS_RESULT_FILE_NAME) %/$(REQUIREMENTS_PKG_FREEZE_FILE_NAME) $(OUTPUT_PKG_PATH)/$(VERSION)
+$(LAMBDA_PKG_ZIPS): ./$(OUTPUT_PKG_PATH)/%.$(VERSION).zip: ./%/$(VENV_PKG_ACTIVATE_PATH) ./results/%/$(PYTESTS_RESULT_FILE_NAME) %/$(REQUIREMENTS_PKG_FREEZE_FILE_NAME) $(OUTPUT_PKG_PATH)/$(VERSION)
 	@echo -e "\e[32m==> Create lambda package $@ \e[0m"
 	@echo -e "\e[32m====> add site-package \e[0m"
 	@cd $$(source $< && python -m site | grep "$$(pwd).*site-packages" | sed "s/^.*'\(.*\)'.*$$/\1/") && \
