@@ -9,14 +9,20 @@ full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terraform"
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_terraform(version, terraform_bin_path):
+def setup_terraform(version, aws_region, terraform_bin_path):
+    print(f"deploy test to region {aws_region}")
+
     tf = Terraform(working_dir=full_path, terraform_bin_path=terraform_bin_path)
 
     tiingo_tickers_csv = "static/tiingo_tickers.csv"
+    var_tf = {
+        "module_version": version,
+        "tiingo_tickers_path": tiingo_tickers_csv,
+        "aws_region": aws_region}
     tf.init()
     ret_code, out, err = tf.apply(
         skip_plan=True,
-        var={"module_version": version, "tiingo_tickers_path": tiingo_tickers_csv},
+        var=var_tf,
     )
 
     if ret_code != 0:
@@ -29,7 +35,7 @@ def setup_terraform(version, terraform_bin_path):
     yield
 
     ret_code, out, err = tf.destroy(
-        var={"module_version": version, "tiingo_tickers_path": tiingo_tickers_csv}
+        var=var_tf
     )
 
     if ret_code != 0:

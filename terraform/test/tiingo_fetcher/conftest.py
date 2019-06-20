@@ -8,39 +8,26 @@ full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terraform"
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_terraform(version, terraform_bin_path):
-    print(os.environ.get("AWS_SECRET_ACCESS_KEY"))
-    print(os.environ.get("AWS_ACCESS_KEY_ID"))
-
+def setup_terraform(version, aws_region, terraform_bin_path):
+    print(f"deploy test to region {aws_region}")
     tf = Terraform(working_dir=full_path, terraform_bin_path=terraform_bin_path)
+    var_tf = {
+        "module_version": version,
+        "tiingo_api_key": os.environ.get("TIINGO_API_KEY"),
+        "aws_region": aws_region,
+    }
 
     tf.init()
-    ret_code, out, err = tf.apply(
-        skip_plan=True,
-        var={
-            "module_version": version,
-            "tiingo_api_key": os.environ.get("TIINGO_API_KEY"),
-        },
-    )
+    ret_code, out, err = tf.apply(skip_plan=True, var=var_tf)
 
     if ret_code != 0:
         print(err)
-        ret_code, out, err = tf.destroy(
-            var={
-                "module_version": version,
-                "tiingo_api_key": os.environ.get("TIINGO_API_KEY"),
-            }
-        )
+        ret_code, out, err = tf.destroy(var=var_tf)
         raise Exception("Error applying terraform. Error \n {}".format(err))
 
     yield
 
-    ret_code, out, err = tf.destroy(
-        var={
-            "module_version": version,
-            "tiingo_api_key": os.environ.get("TIINGO_API_KEY"),
-        }
-    )
+    ret_code, out, err = tf.destroy(var=var_tf)
 
     if ret_code != 0:
         print(err)

@@ -1,13 +1,10 @@
-locals {
-  region = "eu-west-3"
-}
 
 terraform {
   required_version = ">= 0.12"
 }
 
 provider "aws" {
-  region = "${local.region}"
+  region = var.aws_region
   version = "~> 2.0"
 }
 
@@ -19,7 +16,7 @@ resource "random_string" "test" {
 
 resource "aws_s3_bucket" "test_tiingo"{
   bucket = "market-data-${lower(random_string.test.result)}"
-  region = "${local.region}"
+  region = var.aws_region
 }
 
 resource "aws_sqs_queue" "test_tiingo" {
@@ -30,12 +27,12 @@ resource "aws_sqs_queue" "test_tiingo" {
 
 module "tiingo_fetcher" {
   source = "../../../shopper/modules/tiingo_fetcher"
-  aws_region_name = "${local.region}"
-  module_version = "${var.module_version}"
+  aws_region_name = var.aws_region
+  module_version = var.module_version
   packages_path = "../../../shopper/packages"
-  s3_market_data_bucket = "${aws_s3_bucket.test_tiingo.bucket}"
-  tiingo_api_key = "${var.tiingo_api_key}"
-  trigger_sqs_arn = "${aws_sqs_queue.test_tiingo.arn}"
+  s3_market_data_bucket = aws_s3_bucket.test_tiingo.bucket
+  tiingo_api_key = var.tiingo_api_key
+  trigger_sqs_arn = aws_sqs_queue.test_tiingo.arn
 }
 
 variable "module_version" {
@@ -48,23 +45,28 @@ variable "tiingo_api_key" {
   description = "Tiingo api Key"
  }
 
+variable "aws_region" {
+  type = "string"
+  description = "aws region where to deploy"
+}
+
 output "sqs_queue_name" {
-  value = "${aws_sqs_queue.test_tiingo.name}"
+  value = aws_sqs_queue.test_tiingo.name
 }
 
 output "sqs_queue_arn" {
-  value = "${aws_sqs_queue.test_tiingo.arn}"
+  value = aws_sqs_queue.test_tiingo.arn
 }
 
 
 output "s3_bucket_name" {
-  value = "${aws_s3_bucket.test_tiingo.bucket}"
+  value = aws_s3_bucket.test_tiingo.bucket
 }
 
 output "lambda_function_name" {
-  value = "${module.tiingo_fetcher.function_name}"
+  value = module.tiingo_fetcher.function_name
 }
 
 output "region" {
-  value = "${local.region}"
+  value = var.aws_region
 }
