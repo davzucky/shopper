@@ -14,8 +14,9 @@ aws_regions = [
     "us-east-2",
     "us-east-1",
     "us-west-1",
-    "us-west-2"
+    "us-west-2",
 ]
+
 
 def pytest_collection_modifyitems(items):
     for item in items:
@@ -41,12 +42,14 @@ def version() -> str:
     base_version = config["version"]
     return "{}.{}".format(base_version, get_git_commit_hash())
 
+
 @pytest.fixture(scope="session")
 def aws_region(version) -> str:
     hash_version = hash(version)
     nb_region = len(aws_regions)
 
     return aws_regions[hash_version % nb_region]
+
 
 @pytest.fixture(scope="session")
 def terraform_bin_path() -> str:

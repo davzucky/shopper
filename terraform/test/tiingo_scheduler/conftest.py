@@ -18,12 +18,10 @@ def setup_terraform(version, aws_region, terraform_bin_path):
     var_tf = {
         "module_version": version,
         "tiingo_tickers_path": tiingo_tickers_csv,
-        "aws_region": aws_region}
+        "aws_region": aws_region,
+    }
     tf.init()
-    ret_code, out, err = tf.apply(
-        skip_plan=True,
-        var=var_tf,
-    )
+    ret_code, out, err = tf.apply(skip_plan=True, var=var_tf)
 
     if ret_code != 0:
         print(err)
@@ -34,9 +32,7 @@ def setup_terraform(version, aws_region, terraform_bin_path):
 
     yield
 
-    ret_code, out, err = tf.destroy(
-        var=var_tf
-    )
+    ret_code, out, err = tf.destroy(var=var_tf)
 
     if ret_code != 0:
         print(err)
