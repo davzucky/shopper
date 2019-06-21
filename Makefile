@@ -31,9 +31,12 @@ TERRAFORM_BINARY_PATH = $(BINARY_FOLDER)/terraform
 TERRAFORM_MODULE_PATH = ./terraform/$(PROJECT_NAME)
 TERRAFORM_VERSION_FILE = $(TERRAFORM_MODULE_PATH)/variable.version.tf
 TERRAFORM_MODULE_PACKAGES = $(TERRAFORM_MODULE_PATH)/$(PACKAGE_FOLDER_NAME)
-TERRAFORM_PYTEST_RESULT = ./terraform/$(PYTESTS_RESULT_FILE_NAME)
+TERRAFORM_PYTEST_RESULT = ./results/terraform/$(PYTESTS_RESULT_FILE_NAME)
 TERRAFORM_TESTING_REQUIREMENTS = ./terraform/test/requirements.infra.txt
 OUTPUT_PKG_PATH = $(TERRAFORM_MODULE_PACKAGES)
+TERRAFORM_FILES = $(shell find ./terraform -name '*.tf')
+TERRAFORM_TEST_FILES = $(shell find ./terraform -name '*.py')
+
 
 OUTPUT_TEST_RESULT_PATH = ./test_reports
 VENV_TEST_FOLDER_NAME = .venv
@@ -86,6 +89,9 @@ DIRECTORY_EXCLUSION = -path ./.venv $(patsubst  %,-o -path %,$(VENV_ROOT_PATH)) 
 PROJECT_PYTHON_FILES = $(shell find . -type d \( $(DIRECTORY_EXCLUSION) \) -prune -o -name $(PYTHON_FILE_EXTENSION) -print)
 
 MASTER_ACTIVATE_PATH = $(VENV_ACTIVATE_PATH)
+
+TERRAFORM_MODULE_PACKAGE_FOLDER = ./terraform_module
+TERRAFORM_MODULE_PACKAGE_PATH = $(TERRAFORM_MODULE_PACKAGE_FOLDER)/$(PROJECT_NAME).$(VERSION).zip
 
 
 define \n
@@ -245,10 +251,10 @@ $(TERRAFORM_VERSION_FILE):  $(LAMBDA_PKG_ZIPS)
 ###############           Terraform testing                  #########################
 ######################################################################################
 
-$(TERRAFORM_PYTEST_RESULT): $(TERRAFORM_VERSION_FILE) $(TERRAFORM_BINARY_PATH)
+$(TERRAFORM_PYTEST_RESULT): $(TERRAFORM_VERSION_FILE) $(TERRAFORM_BINARY_PATH) $(TERRAFORM_FILES) $(TERRAFORM_TEST_FILES)
 	@echo -e "\e[32m==> Create terraform test $@ \e[0m"
 	@source $(MASTER_ACTIVATE_PATH) && \
-	 pytest -m "terraform_unittest" --html=$@ $(PYTEST_ARGUMENTS) .
+	 pytest -m "terraform_unittest" --junitxml=$@ $(PYTEST_ARGUMENTS) .
 
 ######################################################################################
 ###############           Binary management                  #########################
@@ -271,6 +277,20 @@ $(TERRAFORM_BINARY_PATH): $(TERRAFORM_TEMP_ZIP)
 	@echo -e "\e[32m==> Extract terraform binary\e[0m"
 	@unzip -o $(TERRAFORM_TEMP_ZIP) -d $(BINARY_FOLDER)
 	@touch $(TERRAFORM_BINARY_PATH)
+
+######################################################################################
+###############           Terraform Package creation         #########################
+######################################################################################
+$(TERRAFORM_MODULE_PACKAGE_FOLDER)/.touch:
+	@echo -e "\e[32m==> Create ouput package folder $$@ $$(@D)\e[0m"
+	@mkdir $(TERRAFORM_MODULE_PACKAGE_FOLDER)
+	@touch $@
+
+$(TERRAFORM_MODULE_PACKAGE_PATH): $(TERRAFORM_MODULE_PACKAGE_FOLDER)/.touch $(TERRAFORM_PYTEST_RESULT)
+	@echo -e "\e[32m==> Create terraform package $$@ $$(@D)\e[0m"
+	@cd $(TERRAFORM_MODULE_PATH) && \
+	 zip -r9 $(shell pwd)/$@ .
+
 
 ######################################################################################
 ###############           Main entries points                #########################
@@ -366,6 +386,9 @@ print-value:
 
 create-packages: $(TERRAFORM_VERSION_FILE)  ## Create all the packages
 	@echo -e "\e[32m==> Create packages \e[0m"
+
+create-terraform-package: $(TERRAFORM_MODULE_PACKAGE_PATH)
+	@echo -e "\e[32m==> Create terraform packages \e[0m"
 
 publish-packages-to-s3: $(LAMBDA_PKG_ZIPS_PUBLISHED) ## publish all the package to S3
 	@echo -e "\e[32m==> publish packages to S3 \e[0m"

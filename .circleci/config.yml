@@ -57,9 +57,10 @@ jobs:
           name: test terraform modules
           command: |
             make test-terraform-modules
+      - store_test_results:
+          path: ./results
       - store_artifacts:
-          path: ./terraform/pytest.report.html
-          destination: pytest.report.html
+          path: ./results
 
 #      - persist_to_workspace:
 #          root: packages
