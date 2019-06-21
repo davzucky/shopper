@@ -21,7 +21,7 @@ S3_BUCKET = $(shell grep -r S3_bucket_uri config.toml | awk -F '"' '{print $$2}'
 S3_PACKAGE_PATH = $(shell grep -r S3_folder_path config.toml | awk -F '"' '{print $$2}')
 BINARY_FOLDER = ./bin
 PACKAGE_FOLDER_NAME = packages
-PYTESTS_RESULT_FILE_NAME = pytest.report.html
+PYTESTS_RESULT_FILE_NAME = pytest.report.xml
 
 TERRAFORM_VERSION = 0.12.2
 TERRAFORM_URL = https://releases.hashicorp.com/terraform/$(TERRAFORM_VERSION)/terraform_$(TERRAFORM_VERSION)_linux_amd64.zip
@@ -201,7 +201,7 @@ $(1): $$(filter $$(shell basename $$(shell dirname $(1)))%,$$(PROJECT_PYTHON_FIL
 	@mkdir -p $$(shell dirname $(1))
 	@cd $$(shell basename $$(shell dirname $(1))) &&\
 	 source $(VENV_ACTIVATE_PATH) &&\
-	 pytest -m "not terraform_unittest" --html=$$(abspath $(1)) --junitxml=$$(abspath $$(subst html,xml,$(1)))  $(PYTEST_ARGUMENTS) ./tests
+	 pytest -m "not terraform_unittest" --junitxml=$$(abspath $(1))  $(PYTEST_ARGUMENTS) ./tests
 endef
 $(foreach result_file_path,$(PYTESTS_RESULT_FILES),$(eval $(call Create_Result_File,$(result_file_path))))
 
