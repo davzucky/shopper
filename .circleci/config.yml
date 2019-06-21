@@ -22,6 +22,8 @@ jobs:
             BOTO_CONFIG: /dev/null
       - store_test_results:
           path: ./results
+      - store_artifacts:
+          path: ./results
       - persist_to_workspace:
           root: .
           paths:
