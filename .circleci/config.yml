@@ -62,6 +62,24 @@ jobs:
       - store_artifacts:
           path: ./results
 
+  create-terraform-package:
+    executor: lambda-executor
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: check folder content
+          command: |
+            ls -ali terraform/shopper/packages/
+      - run:
+          name: create terraform package
+          command: |
+            make create-terraform-package
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./terraform_module/*
+
 #      - persist_to_workspace:
 #          root: packages
 #          # Must be relative path from root
@@ -92,6 +110,12 @@ workflows:
       - test-terraform-modules:
           requires:
             - build-lambda-packages
+      - create-terraform-package:
+          requires:
+            - test-terraform-modules
+          filters:
+            branches:
+              only: master
 #      - push-lambda-packages-to-s3:
 #          requires:
 #            - build-lambda-packages

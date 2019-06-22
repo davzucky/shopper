@@ -387,7 +387,7 @@ print-value:
 create-packages: $(TERRAFORM_VERSION_FILE)  ## Create all the packages
 	@echo -e "\e[32m==> Create packages \e[0m"
 
-create-terraform-package: $(TERRAFORM_MODULE_PACKAGE_PATH)
+create-terraform-package: $(TERRAFORM_MODULE_PACKAGE_PATH) ## Create the terraform package
 	@echo -e "\e[32m==> Create terraform packages \e[0m"
 
 publish-packages-to-s3: $(LAMBDA_PKG_ZIPS_PUBLISHED) ## publish all the package to S3
