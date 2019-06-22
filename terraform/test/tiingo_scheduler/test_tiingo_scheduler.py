@@ -78,7 +78,7 @@ def test_lambda_trigger_is_sqs(
 
     messages = set()
 
-    for i in range(0, expect_nb_items // 5):
+    for i in range(0, expect_nb_items // 2):
         msg_list = queue.receive_messages(MaxNumberOfMessages=10)
         for msg in msg_list:
             messages.add(msg.body)
