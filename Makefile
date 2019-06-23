@@ -17,7 +17,7 @@ SHELL := /bin/bash
 
 CONFIG_VERSION = $(shell grep -r version config.toml | awk -F '"' '{print $$2}')
 PROJECT_NAME = $(shell grep -r name config.toml | awk -F '"' '{print $$2}')
-S3_BUCKET = $(shell grep -r S3_bucket_uri config.toml | awk -F '"' '{print $$2}')
+S3_BUCKET_URL = $(shell grep -r S3_bucket_uri config.toml | awk -F '"' '{print $$2}')
 S3_PACKAGE_PATH = $(shell grep -r S3_folder_path config.toml | awk -F '"' '{print $$2}')
 BINARY_FOLDER = ./bin
 PACKAGE_FOLDER_NAME = packages
@@ -300,7 +300,7 @@ $(TERRAFORM_MODULE_PACKAGE_PATH): $(TERRAFORM_MODULE_PACKAGE_FOLDER)/.touch $(TE
 
 $(TERRAFORM_MODULE_PACKAGE_PUBLISHED): $(TERRAFORM_MODULE_PACKAGE_PATH) $(REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME)
 	@echo -e "\e[32m==> publishing package $< to S3\e[0m"
-	@source $(VENV_AWS_CLI_ACTIVATE_PATH)  && aws s3 cp $< $(S3_PACKAGE_PATH)/$(PROJECT_NAME)/$(shell basename $<)
+	@source $(VENV_AWS_CLI_ACTIVATE_PATH)  && aws s3 cp $< $(S3_BUCKET_URL)/$(S3_PACKAGE_PATH)/$(PROJECT_NAME)/$(shell basename $<)
 	@touch $@
 
 ######################################################################################
