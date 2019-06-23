@@ -85,24 +85,16 @@ jobs:
             - ./terraform_module/*
       - store_artifacts:
           path: ./terraform_module
-#      - persist_to_workspace:
-#          root: packages
-#          # Must be relative path from root
-#          paths:
-#            - .
 
-
-#  push-lambda-packages-to-s3:
-#    executor: lambda-executor
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - attach_workspace:
-#          at: packages
-#      - run:
-#          name: Check package content
-#          command: |
-#            make --trace publish-packages-to-s3
+  push-terraform-module-to-s3:
+    executor: lambda-executor
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Check package content
+          command: |
+            make --trace publish-packages-to-s3
 
 workflows:
   version: 2
@@ -121,6 +113,13 @@ workflows:
           filters:
             branches:
               only: master
+      - push-terraform-module-to-s3:
+          requires:
+            - create-terraform-package
+          filters:
+            branches:
+              only: master
+
 #      - push-lambda-packages-to-s3:
 #          requires:
 #            - build-lambda-packages

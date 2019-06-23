@@ -1,5 +1,5 @@
 name = "shopper"
 version = "0.1"
 
-S3_bucket_uri = "s3://hw-lambda-packages.programmableproduction.com"
-S3_folder_path = "packages/lambda"
+S3_bucket_uri = "s3://hw-modules-store.s3.amazonaws.com"
+S3_folder_path = "modules"

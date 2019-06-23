@@ -92,6 +92,7 @@ MASTER_ACTIVATE_PATH = $(VENV_ACTIVATE_PATH)
 
 TERRAFORM_MODULE_PACKAGE_FOLDER = ./terraform_module
 TERRAFORM_MODULE_PACKAGE_PATH = $(TERRAFORM_MODULE_PACKAGE_FOLDER)/$(PROJECT_NAME).$(VERSION).zip
+TERRAFORM_MODULE_PACKAGE_PUBLISHED = $TERRAFORM_MODULE_PACKAGE_PATH).published
 
 
 define \n
@@ -138,10 +139,10 @@ $(REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME) : $(REQUIREMENTS_AWS_CLI_FILE_NAME) $(V
 	@echo -e "\e[32m====> generate freeze file $@\e[0m"
 	@source $(VENV_AWS_CLI_ACTIVATE_PATH) && pip freeze > $@
 
-$(LAMBDA_PKG_ZIPS_PUBLISHED) : %.published : %.zip $(REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME)
-	@echo -e "\e[32m==> publishing package $< to S3\e[0m"
-	@source $(VENV_AWS_CLI_ACTIVATE_PATH)  && aws s3 cp $< $(subst $(PACKAGE_FOLDER_NAME),$(S3_BASE_URI)/$(VERSION),$<)
-	@touch $@
+#$(LAMBDA_PKG_ZIPS_PUBLISHED) : %.published : %.zip $(REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME)
+#	@echo -e "\e[32m==> publishing package $< to S3\e[0m"
+#	@source $(VENV_AWS_CLI_ACTIVATE_PATH)  && aws s3 cp $< $(subst $(PACKAGE_FOLDER_NAME),$(S3_BASE_URI)/$(VERSION),$<)
+#	@touch $@
 
 $(FUNCTION_PKG_ACTIVATE_PATH):
 	@echo -e "\e[32m==> Create virtual env $@\e[0m"
@@ -292,6 +293,16 @@ $(TERRAFORM_MODULE_PACKAGE_PATH): $(TERRAFORM_MODULE_PACKAGE_FOLDER)/.touch $(TE
 	 zip -r9 $(shell pwd)/$@ .
 
 
+
+######################################################################################
+###############           S3 package publishing              #########################
+######################################################################################
+
+$(TERRAFORM_MODULE_PACKAGE_PUBLISHED): $(TERRAFORM_MODULE_PACKAGE_PATH) $(REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME)
+	@echo -e "\e[32m==> publishing package $< to S3\e[0m"
+	@source $(VENV_AWS_CLI_ACTIVATE_PATH)  && aws s3 cp $< $(S3_PACKAGE_PATH)/$(PROJECT_NAME)/$(basename $<)
+	@touch $@
+
 ######################################################################################
 ###############           Main entries points                #########################
 ######################################################################################
@@ -390,5 +401,5 @@ create-packages: $(TERRAFORM_VERSION_FILE)  ## Create all the packages
 create-terraform-package: $(TERRAFORM_MODULE_PACKAGE_PATH) ## Create the terraform package
 	@echo -e "\e[32m==> Create terraform packages \e[0m"
 
-publish-packages-to-s3: $(LAMBDA_PKG_ZIPS_PUBLISHED) ## publish all the package to S3
+publish-packages-to-s3: $(TERRAFORM_MODULE_PACKAGE_PUBLISHED) ## publish all the package to S3
 	@echo -e "\e[32m==> publish packages to S3 \e[0m"
