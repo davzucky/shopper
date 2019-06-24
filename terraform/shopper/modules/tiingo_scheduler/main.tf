@@ -1,30 +1,29 @@
 locals {
   module_name = "tiingo_scheduler"
-  zip_file_path = "${var.packages_path}/${local.module_name}.${var.module_version}.zip"
+  zip_file_path = "${path.module}/../../packages/${local.module_name}.${var.share_variables.version}.zip"
 }
 
 resource "aws_lambda_function" "tiingo_scheduler_lambda_function" {
-  function_name = "${local.module_name}"
+  function_name = "${local.module_name}_${var.share_variables.environment}"
   handler       = "${local.module_name}.handler.handler"
-  filename      = "${local.zip_file_path}"
-  role          = "${aws_iam_role.tiingo_scheduler_lambda.arn}"
+  filename      = local.zip_file_path
+  role          = aws_iam_role.tiingo_scheduler_lambda.arn
   runtime       = "python3.7"
-  source_code_hash = filebase64sha256("${local.zip_file_path}")
+  source_code_hash = filebase64sha256(local.zip_file_path)
   timeout = "300"
   tags = {
-    version = "${var.module_version}"
+    version = var.share_variables.version
   }
 
   environment {
     variables = {
-      "AWS_S3_BUCKET" = "${var.s3_market_data_bucket}"
-      "TIINGO_FETCHER_QUEUE" = "${var.trigger_sqs_arn}"
-      "TIINGO_TICKERS_FILE" = "${var.tiingo_tickers_file_path}"
-      "LAMBDA_LOGGING_LEVEL" = "${var.loging_level}"
+      "AWS_S3_BUCKET" = var.s3_market_data_bucket
+      "TIINGO_FETCHER_QUEUE" = var.trigger_sqs_arn
+      "TIINGO_TICKERS_FILE" = var.tiingo_tickers_file_path
+      "LAMBDA_LOGGING_LEVEL" = var.share_variables.loging_level
     }
   }
 }
-
 
 resource "aws_cloudwatch_event_rule" "Every_day_HK_8pm" {
     name = "Monday_to_Friday_8pm_HKT"

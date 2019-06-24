@@ -7,19 +7,19 @@ provider "aws" {
   version = "~> 2.0"
 }
 
-resource "random_string" "test" {
-  # Generate a random id for each deployment
-  length = 8
-  override_special = "-"
-}
+//resource "random_string" "test" {
+//  # Generate a random id for each deployment
+//  length = 8
+//  override_special = "-"
+//}
 
 resource "aws_s3_bucket" "test_tiingo" {
-  bucket = "market-data-${lower(random_string.test.result)}"
+  bucket = "market-data-${lower(var.environment)}"
   region = var.aws_region
 }
 
 resource "aws_sqs_queue" "test_tiingo" {
-  name = "tiingo_fetch-${lower(random_string.test.result)}"
+  name = "tiingo_fetch-${lower(var.environment)}"
   visibility_timeout_seconds = "300"
   receive_wait_time_seconds = 20
 }
@@ -32,13 +32,19 @@ resource "aws_s3_bucket_object" "tiingo_ticker_csv" {
 
 module "tiingo_scheduler" {
   source = "../../../shopper/modules/tiingo_scheduler"
-  aws_region_name = var.aws_region
-  module_version = var.module_version
-  packages_path = "../../../shopper/packages"
+  share_variables = {
+    version = var.module_version
+    environment = var.environment
+    loging_level = "DEBUG"
+    region = var.aws_region
+  }
+//  aws_region_name = var.aws_region
+//  module_version = var.module_version
+//  packages_path = "../../../shopper/packages"
   s3_market_data_bucket = aws_s3_bucket.test_tiingo.bucket
   trigger_sqs_arn = aws_sqs_queue.test_tiingo.name
   tiingo_tickers_file_path = var.tiingo_tickers_path
-  loging_level = "DEBUG"
+//  loging_level = "DEBUG"
 }
 
 variable "module_version" {
@@ -51,6 +57,12 @@ variable "tiingo_tickers_path" {
   type = "string"
   description = "Path to the tiingo tickers csv file"
 }
+
+variable "environment"{
+  type = "string"
+  description = "Name of the environmenet"
+}
+
 
 variable "aws_region" {
   type = "string"

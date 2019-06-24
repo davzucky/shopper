@@ -10,11 +10,14 @@ full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terraform"
 @pytest.fixture(scope="session", autouse=True)
 def setup_terraform(version, aws_region, terraform_bin_path):
     print(f"deploy test to region {aws_region}")
+    environment = version.split(".")[-1]
+
     tf = Terraform(working_dir=full_path, terraform_bin_path=terraform_bin_path)
     var_tf = {
         "module_version": version,
         "tiingo_api_key": os.environ.get("TIINGO_API_KEY"),
         "aws_region": aws_region,
+        "environment": environment,
     }
 
     tf.init()

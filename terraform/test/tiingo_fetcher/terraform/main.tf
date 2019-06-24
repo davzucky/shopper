@@ -8,28 +8,25 @@ provider "aws" {
   version = "~> 2.0"
 }
 
-resource "random_string" "test" {
-  # Generate a random id for each deployment
-  length           = 8
-  override_special = "-"
-}
-
 resource "aws_s3_bucket" "test_tiingo"{
-  bucket = "market-data-${lower(random_string.test.result)}"
+  bucket = "market-data-${lower(var.environment)}"
   region = var.aws_region
 }
 
 resource "aws_sqs_queue" "test_tiingo" {
-  name = "tiingo_fetch-${lower(random_string.test.result)}"
+  name = "tiingo_fetch-${lower(var.environment)}"
   visibility_timeout_seconds = "300"
   receive_wait_time_seconds = 20
 }
 
 module "tiingo_fetcher" {
   source = "../../../shopper/modules/tiingo_fetcher"
-  aws_region_name = var.aws_region
-  module_version = var.module_version
-  packages_path = "../../../shopper/packages"
+    share_variables = {
+    version = var.module_version
+    environment = var.environment
+    loging_level = "DEBUG"
+    region = var.aws_region
+  }
   s3_market_data_bucket = aws_s3_bucket.test_tiingo.bucket
   tiingo_api_key = var.tiingo_api_key
   trigger_sqs_arn = aws_sqs_queue.test_tiingo.arn
@@ -50,6 +47,12 @@ variable "aws_region" {
   description = "aws region where to deploy"
 }
 
+variable "environment"{
+  type = "string"
+  description = "Name of the environmenet"
+}
+
+
 output "sqs_queue_name" {
   value = aws_sqs_queue.test_tiingo.name
 }
@@ -57,7 +60,6 @@ output "sqs_queue_name" {
 output "sqs_queue_arn" {
   value = aws_sqs_queue.test_tiingo.arn
 }
-
 
 output "s3_bucket_name" {
   value = aws_s3_bucket.test_tiingo.bucket
