@@ -1,5 +1,5 @@
 import requests
-from typing import Union
+from typing import Union, Dict
 
 import datetime
 
@@ -61,9 +61,26 @@ def get_date_from_epoch_offset(epoch: int, offset: int = 0) -> datetime.date:
 def get_bloomberg_ticker_market_data(
     ticker: str
 ) -> Union[BloombergFundMarketData, BloombergMarketDataError]:
+    headers = {
+        "Host": "www.bloomberg.com",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:66.0) "
+        "Gecko/20100101 Firefox/66.0",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate, br",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+    }
+
+    proxies: Dict[str, str] = {}
     response = requests.get(
-        "https://www.bloomberg.com/markets/api/security/basic/{}".format(ticker)
+        "https://www.bloomberg.com/markets/api/security/basic/{}".format(ticker),
+        headers=headers,
+        proxies=proxies,
     )
+
+    print(response.content)
 
     if response.status_code == 200:
         json_response = response.json()

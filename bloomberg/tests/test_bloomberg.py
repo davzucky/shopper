@@ -6,6 +6,7 @@ from bloomberg.bloomberg import (
 )
 
 UNKNOWN_SAMPLE_DATA = {"securityType": "UNKNOWN"}
+
 FUND_SAMPLE_DATA = {
     "id": "JPMPCAA:HK",
     "fundType": "Open-End Fund",
@@ -83,3 +84,11 @@ def test_when_ticker_not_valid_return_unknow(requests_mock):
     assert return_value.status_code == 304
 
     assert return_value.error == '{"securityType": "UNKNOWN"}'
+
+
+def test_real_call_to_bloomberg():
+    ticker = "JPMPCAA:HK"
+
+    return_value = get_bloomberg_ticker_market_data(ticker)
+
+    assert return_value.close > 0

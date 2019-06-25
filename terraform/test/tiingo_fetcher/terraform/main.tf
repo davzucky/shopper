@@ -9,7 +9,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "test_tiingo"{
-  bucket = "market-data-${lower(var.environment)}"
+  bucket = "market-data-tiingo-fetch-${lower(var.environment)}"
   region = var.aws_region
 }
 
