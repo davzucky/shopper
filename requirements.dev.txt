@@ -2,6 +2,6 @@ black==19.3b0
 pytest==4.6.3
 pytest-runner==5.1
 pytest-flake8==1.0.4
-mypy==0.701
+mypy==0.711
 pytest-mypy==0.3.2
 pytest-html==1.21.1
