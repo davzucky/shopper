@@ -7,19 +7,19 @@ provider "aws" {
   version = "~> 2.0"
 }
 
-//resource "random_string" "test" {
-//  # Generate a random id for each deployment
-//  length = 8
-//  override_special = "-"
-//}
+resource "random_string" "test" {
+  # Generate a random id for each deployment
+  length           = 3
+  override_special = "-"
+}
 
 resource "aws_s3_bucket" "test_tiingo" {
-  bucket = "market-data-tiingo-scheduler-${lower(var.environment)}"
+  bucket = "market-data-tiingo-scheduler-${lower(var.environment)}-${lower(random_string.test.result)}"
   region = var.aws_region
 }
 
 resource "aws_sqs_queue" "test_tiingo" {
-  name = "tiingo_fetch-tiingo-scheduler${lower(var.environment)}"
+  name = "tiingo_fetch-tiingo-scheduler${lower(var.environment)}-${lower(random_string.test.result)}"
   visibility_timeout_seconds = "300"
   receive_wait_time_seconds = 20
 }
