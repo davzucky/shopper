@@ -14,12 +14,12 @@ provider "aws" {
 //}
 
 resource "aws_s3_bucket" "test_tiingo" {
-  bucket = "market-data-${lower(var.environment)}"
+  bucket = "market-data-tiingo-scheduler-${lower(var.environment)}"
   region = var.aws_region
 }
 
 resource "aws_sqs_queue" "test_tiingo" {
-  name = "tiingo_fetch-${lower(var.environment)}"
+  name = "tiingo_fetch-tiingo-scheduler${lower(var.environment)}"
   visibility_timeout_seconds = "300"
   receive_wait_time_seconds = 20
 }

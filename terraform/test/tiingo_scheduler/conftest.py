@@ -27,9 +27,7 @@ def setup_terraform(version, aws_region, terraform_bin_path):
 
     if ret_code != 0:
         print(err)
-        ret_code, out, err = tf.destroy(
-            var={"module_version": version, "tiingo_tickers_path": tiingo_tickers_csv}
-        )
+        ret_code, out, err = tf.destroy(var=var_tf)
         raise Exception("Error applying terraform. Error \n {}".format(err))
 
     yield
