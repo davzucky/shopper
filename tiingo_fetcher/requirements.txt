@@ -1,4 +1,4 @@
-boto3==1.9.175
+boto3==1.9.177
 dataclasses-json==0.2.7
 tiingo==0.10.0
 daiquiri==1.5.0
