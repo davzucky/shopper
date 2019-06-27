@@ -2,4 +2,4 @@ boto3==1.9.177
 dataclasses-json==0.2.7
 dataclass-csv==1.1.2
 daiquiri==1.5.0
-more-itertools==7.0.0
+more-itertools==7.1.0
