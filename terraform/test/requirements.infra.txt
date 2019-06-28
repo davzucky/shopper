@@ -1,3 +1,2 @@
-# Remove python terraform until support for 0.12 is done. Including the code here
-# python_terraform==0.10.0
+python_terraform==0.10.1
 botostubs==0.9.1.9.167

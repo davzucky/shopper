@@ -3,7 +3,7 @@ from typing import Dict
 
 import pytest
 
-from ..python_terraform import Terraform
+from python_terraform import Terraform
 
 full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terraform")
 
