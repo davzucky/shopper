@@ -11,7 +11,6 @@ variable "region" {
 variable "tiingo_api_key" {
   type = "string"
   description = "Tiingo API key to use"
-
 }
 
 variable "scope" {
