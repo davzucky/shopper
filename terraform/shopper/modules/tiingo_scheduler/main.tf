@@ -32,16 +32,16 @@ resource "aws_cloudwatch_event_rule" "Every_day_HK_8pm" {
 }
 
 resource "aws_cloudwatch_event_target" "run_tiingo_scheduler_Every_day_HK_8pm" {
-    rule = "${aws_cloudwatch_event_rule.Every_day_HK_8pm.name}"
+    rule = aws_cloudwatch_event_rule.Every_day_HK_8pm.name
     target_id = "Load_HK_Market_Data"
-    arn = "${aws_lambda_function.tiingo_scheduler_lambda_function.arn}"
+    arn = aws_lambda_function.tiingo_scheduler_lambda_function.arn
     input = "[{\"exchange\": \"SHE\"}, {\"exchange\": \"SHG\"}]"
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_tiingo_scheduler" {
     statement_id = "AllowExecutionFromCloudWatch"
     action = "lambda:InvokeFunction"
-    function_name = "${aws_lambda_function.tiingo_scheduler_lambda_function.function_name}"
+    function_name = aws_lambda_function.tiingo_scheduler_lambda_function.function_name
     principal = "events.amazonaws.com"
-    source_arn = "${aws_cloudwatch_event_rule.Every_day_HK_8pm.arn}"
+    source_arn = aws_cloudwatch_event_rule.Every_day_HK_8pm.arn
 }

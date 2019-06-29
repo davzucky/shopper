@@ -16,12 +16,12 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "tiingo_scheduler_lambda" {
-  policy_arn = "${aws_iam_policy.bloomberg_lambda.arn}"
-  role = "${aws_iam_role.tiingo_scheduler_lambda.name}"
+  policy_arn = aws_iam_policy.bloomberg_lambda.arn
+  role = aws_iam_role.tiingo_scheduler_lambda.name
 }
 
 resource "aws_iam_policy" "bloomberg_lambda" {
-  policy = "${data.aws_iam_policy_document.tiingo_scheduler_lambda.json}"
+  policy = data.aws_iam_policy_document.tiingo_scheduler_lambda.json
 }
 
 data "aws_iam_policy_document" "tiingo_scheduler_lambda" {

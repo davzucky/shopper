@@ -16,12 +16,12 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "tiingo_fetcher_lambda" {
-  policy_arn = "${aws_iam_policy.bloomberg_lambda.arn}"
-  role = "${aws_iam_role.tiingo_fetcher_lambda.name}"
+  policy_arn = aws_iam_policy.bloomberg_lambda.arn
+  role = aws_iam_role.tiingo_fetcher_lambda.name
 }
 
 resource "aws_iam_policy" "bloomberg_lambda" {
-  policy = "${data.aws_iam_policy_document.tiingo_fetcher_lambda.json}"
+  policy = data.aws_iam_policy_document.tiingo_fetcher_lambda.json
 }
 
 data "aws_iam_policy_document" "tiingo_fetcher_lambda" {
@@ -71,11 +71,6 @@ data "aws_iam_policy_document" "tiingo_fetcher_lambda" {
       actions = [
           "s3:*"
       ]
-
-
-    //      Principal = {
-//          AWS ="arn:aws:iam::123XXX:role/service-role/LAMBDA_ROLE_NAME"
-//      },
   }
 
 }

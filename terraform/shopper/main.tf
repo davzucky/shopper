@@ -1,9 +1,9 @@
 locals {
   tiingo_ticker_file_path = "static/tinngo_tickers.csv"
   share_variable = {
-    version = var.module_version
-    environment = var.environment
-    region = var.region
+    version      = var.module_version
+    environment  = var.environment
+    region       = var.region
     loging_level = var.loging_level
   }
 }
@@ -20,22 +20,22 @@ locals {
 
 
 module "tiingo_fetcher" {
-  source = "./modules/tiingo_fetcher"
+  source                = "./modules/tiingo_fetcher"
   s3_market_data_bucket = var.S3_market_data_bucket
-  trigger_sqs_arn = module.sqs.sqs_tiingo_fetcher_arn
-  tiingo_api_key = var.tiingo_api_key
-  share_variables = local.share_variable
+  trigger_sqs_arn       = module.sqs.sqs_tiingo_fetcher_arn
+  tiingo_api_key        = var.tiingo_api_key
+  share_variables       = local.share_variable
 }
 
 module "tiingo_scheduler" {
-  source = "./modules/tiingo_scheduler"
-  share_variables = local.share_variable
-  s3_market_data_bucket = var.S3_market_data_bucket
+  source                   = "./modules/tiingo_scheduler"
+  share_variables          = local.share_variable
+  s3_market_data_bucket    = var.S3_market_data_bucket
   tiingo_tickers_file_path = local.tiingo_ticker_file_path
-  trigger_sqs_arn = module.sqs.sqs_tiingo_fetcher_arn
+  trigger_sqs_arn          = module.sqs.sqs_tiingo_fetcher_arn
 }
 
 module "sqs" {
-  source = "./modules/sqs"
+  source          = "./modules/sqs"
   share_variables = local.share_variable
 }
