@@ -23,6 +23,6 @@ variable "trigger_sqs_arn" {
 variable "tiingo_tickers_file_path"  {
   type = "string"
   description = "Path to the tiingo tickers file in the s3 bucker"
-  default = "static/tinngo_tickers.csv"
+  default = "static/tiingo_tickers.csv"
 }
 
