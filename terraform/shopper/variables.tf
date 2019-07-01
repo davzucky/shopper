@@ -30,3 +30,9 @@ variable "tiingo_api_key" {
   description = "Tiingo API key to use"
 }
 
+variable "tiingo_tickers_file_path" {
+  type = "string"
+  description = "Tiingo path to the file containing the tickers"
+  default = "static/tiingo_tickers.csv"
+}
+

@@ -1,3 +1,6 @@
-output "sqs_tiingo_fetcher_arn" {
-  value = "${aws_sqs_queue.tiingo_fetcher_fetch_queue.arn}"
+output "tiingo_fetcher" {
+  value = {
+    "name" = aws_sqs_queue.tiingo_fetcher_fetch_queue.name
+    "arn" = aws_sqs_queue.tiingo_fetcher_fetch_queue.arn
+  }
 }

@@ -4,7 +4,7 @@ locals {
 }
 
 resource "aws_lambda_function" "tiingo_scheduler_lambda_function" {
-  function_name = "${local.module_name}_${var.share_variables.environment}"
+  function_name = lower(terraform.workspace) == "prod" ? local.module_name : "${local.module_name}_${var.share_variables.environment}"
   handler       = "${local.module_name}.handler.handler"
   filename      = local.zip_file_path
   role          = aws_iam_role.tiingo_scheduler_lambda.arn
