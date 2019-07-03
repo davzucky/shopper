@@ -17,6 +17,8 @@ aws_regions = [
     "us-west-2",
 ]
 
+run_id = 0
+
 
 def pytest_collection_modifyitems(items):
     for item in items:
@@ -41,6 +43,14 @@ def version() -> str:
     config = toml.load(full_path)
     base_version = config["version"]
     return "{}.{}".format(base_version, get_git_commit_hash())
+
+
+@pytest.fixture(scope="module")
+def environment(version) -> str:
+    global run_id
+    run_id += 1
+    environment = version.split(".")[-1]
+    return f"{environment}{run_id}"
 
 
 @pytest.fixture(scope="session")

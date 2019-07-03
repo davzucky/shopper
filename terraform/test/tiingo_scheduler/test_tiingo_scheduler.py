@@ -44,12 +44,12 @@ def test_deploy_1_event_rule(terraform_output):
     [("Monday_to_Friday_8pm_HKT", '[{"exchange": "SHE"}, {"exchange": "SHG"}]')],
 )
 def test_target_has_right_param_for_rule(
-    terraform_output, event_rule: str, json_param: str
+    terraform_output, environment, event_rule: str, json_param: str
 ):
     lambda_function_arn = terraform_output["lambda_function_arn"]["value"]
     region = terraform_output["region"]["value"]
     events_client = boto3.client("events", region_name=region)  # type: botostubs.Events
-    targets = events_client.list_targets_by_rule(Rule=event_rule)
+    targets = events_client.list_targets_by_rule(Rule=f"{event_rule}_{environment}")
 
     assert len(targets["Targets"]) == 1
     assert targets["Targets"][0]["Arn"] == lambda_function_arn

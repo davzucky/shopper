@@ -26,7 +26,7 @@ resource "aws_lambda_function" "tiingo_scheduler_lambda_function" {
 }
 
 resource "aws_cloudwatch_event_rule" "Every_day_HK_8pm" {
-    name = "Monday_to_Friday_8pm_HKT"
+    name = lower(terraform.workspace) == "prod" ? "Monday_to_Friday_8pm_HKT" : "Monday_to_Friday_8pm_HKT_${var.share_variables.environment}"
     description = "Monday to Friday 8pm HKT"
     schedule_expression = "cron(0 12 ? * TUE-SAT *)"
 }
