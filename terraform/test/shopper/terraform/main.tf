@@ -8,14 +8,8 @@ provider "aws" {
   version = "~> 2.0"
 }
 
-resource "random_string" "test" {
-  # Generate a random id for each deployment
-  length           = 3
-  override_special = "-"
-}
-
 resource "aws_s3_bucket" "test_tiingo"{
-  bucket = "market-data-tiingo-fetch-${lower(var.environment)}-${lower(random_string.test.result)}"
+  bucket = "market-data-tiingo-fetch-${lower(var.environment)}"
   region = var.aws_region
 }
 
