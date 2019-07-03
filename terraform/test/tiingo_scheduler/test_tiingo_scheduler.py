@@ -13,10 +13,9 @@ def clean_aws_sqs(terraform_output):
     yield
 
 
-def test_lambda_function_check_setup(version, terraform_output):
+def test_lambda_function_check_setup(version, environment, terraform_output):
     lambda_function_name = terraform_output["lambda_function_name"]["value"]
     region = terraform_output["region"]["value"]
-    environment = version.split(".")[-1]
 
     assert lambda_function_name == f"tiingo_scheduler_{environment}"
 
