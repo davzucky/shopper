@@ -243,7 +243,7 @@ $(LAMBDA_PKG_ZIPS): ./$(OUTPUT_PKG_PATH)/%.$(VERSION).zip: ./%/$(VENV_PKG_ACTIVA
 	@echo -e "\e[32m====> add lambda module files \e[0m"
 	@zip -g $(shell pwd)/$@  $(filter-out  ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)tests/%,$(filter ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)%,$(PROJECT_PYTHON_FILES)))
 
-$(TERRAFORM_VERSION_FILE):  $(LAMBDA_PKG_ZIPS)
+$(TERRAFORM_VERSION_FILE):
 	@echo -e "\e[32m==> Create terraform variable version file $@ \e[0m"
 	@printf '%b\n' "variable \"module_version\" { \n  type = \"string\" \n  description = \"version of the module\" \n  default = \"$(VERSION)\" \n }" > $@
 
@@ -298,8 +298,9 @@ $(TERRAFORM_MODULE_PACKAGE_PATH): $(TERRAFORM_MODULE_PACKAGE_FOLDER)/.touch $(TE
 ###############           S3 package publishing              #########################
 ######################################################################################
 
-$(TERRAFORM_MODULE_PACKAGE_PUBLISHED): $(TERRAFORM_MODULE_PACKAGE_PATH) $(REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME)
+$(TERRAFORM_MODULE_PACKAGE_PUBLISHED): $(REQUIREMENTS_AWS_CLI_FREEZE_FILE_NAME)
 	@echo -e "\e[32m==> publishing package $< to S3\e[0m"
+#	$(TERRAFORM_MODULE_PACKAGE_PATH)
 	@source $(VENV_AWS_CLI_ACTIVATE_PATH)  && aws s3 cp $< $(S3_BUCKET_URL)/$(S3_PACKAGE_PATH)/$(PROJECT_NAME)/$(shell basename $<)
 	@touch $@
 
