@@ -41,7 +41,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - ./terraform/shopper/packages/*
+            - ./terraform/shopper/packages
             - ./terraform/shopper/variable.version.tf
 
   test-terraform-modules:
