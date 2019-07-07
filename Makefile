@@ -243,7 +243,7 @@ $(LAMBDA_PKG_ZIPS): ./$(OUTPUT_PKG_PATH)/%.$(VERSION).zip: ./%/$(VENV_PKG_ACTIVA
 	@echo -e "\e[32m====> add lambda module files \e[0m"
 	@zip -g $(shell pwd)/$@  $(filter-out  ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)tests/%,$(filter ./$(subst $(VENV_PKG_ACTIVATE_PATH),,$<)%,$(PROJECT_PYTHON_FILES)))
 
-$(TERRAFORM_VERSION_FILE):
+$(TERRAFORM_VERSION_FILE): $(LAMBDA_PKG_ZIPS)
 	@echo -e "\e[32m==> Create terraform variable version file $@ \e[0m"
 	@printf '%b\n' "variable \"module_version\" { \n  type = \"string\" \n  description = \"version of the module\" \n  default = \"$(VERSION)\" \n }" > $@
 
