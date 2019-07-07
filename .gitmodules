@@ -1,0 +1,3 @@
+[submodule "aws_terraform_harness"]
+	path = aws_terraform_harness
+	url = https://github.com/davzucky/aws_terraform_harness.git
