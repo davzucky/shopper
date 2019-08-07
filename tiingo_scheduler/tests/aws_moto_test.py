@@ -1,1 +1,0 @@
-../../shared/aws_moto_test.py
