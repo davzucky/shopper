@@ -17,7 +17,7 @@ EOF
 
 resource "aws_iam_role_policy_attachment" "tiingo_fetcher_lambda" {
   policy_arn = aws_iam_policy.bloomberg_lambda.arn
-  role = aws_iam_role.tiingo_fetcher_lambda.name
+  role       = aws_iam_role.tiingo_fetcher_lambda.name
 }
 
 resource "aws_iam_policy" "bloomberg_lambda" {
@@ -62,15 +62,15 @@ data "aws_iam_policy_document" "tiingo_fetcher_lambda" {
     ]
   }
   statement {
-      sid = "AllowS3Access"
-      effect = "Allow"
-      resources = [
-          "arn:aws:s3:::${var.s3_market_data_bucket}",
-          "arn:aws:s3:::${var.s3_market_data_bucket}/*"
-      ]
-      actions = [
-          "s3:*"
-      ]
+    sid    = "AllowS3Access"
+    effect = "Allow"
+    resources = [
+      "arn:aws:s3:::${var.s3_market_data_bucket}",
+      "arn:aws:s3:::${var.s3_market_data_bucket}/*"
+    ]
+    actions = [
+      "s3:*"
+    ]
   }
 
 }

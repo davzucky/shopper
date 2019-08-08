@@ -17,7 +17,7 @@ EOF
 
 resource "aws_iam_role_policy_attachment" "tiingo_scheduler_lambda" {
   policy_arn = aws_iam_policy.bloomberg_lambda.arn
-  role = aws_iam_role.tiingo_scheduler_lambda.name
+  role       = aws_iam_role.tiingo_scheduler_lambda.name
 }
 
 resource "aws_iam_policy" "bloomberg_lambda" {
@@ -26,10 +26,10 @@ resource "aws_iam_policy" "bloomberg_lambda" {
 
 data "aws_iam_policy_document" "tiingo_scheduler_lambda" {
   statement {
-    sid = "AllowSQSPermissions"
+    sid    = "AllowSQSPermissions"
     effect = "Allow"
     resources = [
-      "arn:aws:sqs:*"]
+    "arn:aws:sqs:*"]
 
     actions = [
       "sqs:SendMessage",
@@ -41,28 +41,28 @@ data "aws_iam_policy_document" "tiingo_scheduler_lambda" {
   }
 
   statement {
-    sid = "AllowInvokingLambdas"
+    sid    = "AllowInvokingLambdas"
     effect = "Allow"
     resources = [
-      "arn:aws:lambda:${var.share_variables.region}:*:function:*"]
+    "arn:aws:lambda:${var.share_variables.region}:*:function:*"]
     actions = [
-      "lambda:InvokeFunction"]
+    "lambda:InvokeFunction"]
   }
 
   statement {
-    sid = "AllowCreatingLogGroups"
+    sid    = "AllowCreatingLogGroups"
     effect = "Allow"
     resources = [
-      "arn:aws:logs:${var.share_variables.region}:*:*"]
+    "arn:aws:logs:${var.share_variables.region}:*:*"]
     actions = [
-      "logs:CreateLogGroup"]
+    "logs:CreateLogGroup"]
   }
 
   statement {
-    sid = "AllowWritingLogs"
+    sid    = "AllowWritingLogs"
     effect = "Allow"
     resources = [
-      "arn:aws:logs:${var.share_variables.region}:*:log-group:/aws/lambda/*:*"]
+    "arn:aws:logs:${var.share_variables.region}:*:log-group:/aws/lambda/*:*"]
 
     actions = [
       "logs:CreateLogStream",
@@ -70,7 +70,7 @@ data "aws_iam_policy_document" "tiingo_scheduler_lambda" {
     ]
   }
   statement {
-    sid = "AllowS3Access"
+    sid    = "AllowS3Access"
     effect = "Allow"
     resources = [
       "arn:aws:s3:::${var.s3_market_data_bucket}",
