@@ -1,17 +1,25 @@
 SHELL := /bin/bash
 BUILD_HARNESS_PATH := $(PWD)/aws_terraform_harness
 
-TERRAFORM_CONFIG_FOLDER = $(abspath ./terraform)
+TERRAFORM_CONFIG_FOLDER = $(abspath ./terraform/$(PROJECT_NAME))
 
-#-include aws_terraform_harness
--include aws_terraform_harness/Makefile
--include aws_terraform_harness/Makefile.helpers
+-include $(BUILD_HARNESS_PATH)/Makefile
+-include $(BUILD_HARNESS_PATH)/Makefile.helpers
+-include $(BUILD_HARNESS_PATH)/modules/Makefile.share.variables
 
 
-## Format terraform code
-format-code:
+format-code: ## Format terraform code of the lamdba and terraform
+	$(SELF) python/lambda/format-code
 	$(SELF) terraform/format-code
 
-## Apply config to staging
-apply-staging:
+linter: ## Format terraform code of the lamdba and terraform
+#	$(SELF) python/lambda/format-code
+	@echo $(TERRAFORM_CONFIG_FOLDER)
+	$(SELF) terraform/linter
+#	 TERRAFORM_CONFIG_FOLDER=terraform/shopper/
+
+
+
+apply-staging: ## Apply config to staging
 	$(SELF) terraform/apply-workspace TERRAFORM_WORKSPACE_NAME=staging
+
