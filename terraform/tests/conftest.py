@@ -63,4 +63,5 @@ def aws_region(version) -> str:
 
 @pytest.fixture(scope="session")
 def terraform_bin_path() -> str:
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "./bin/terraform")
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "../../bin/terraform")

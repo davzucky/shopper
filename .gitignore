@@ -111,11 +111,17 @@ venv.bak/
 .mypy_cache/
 **/.mypy_cache/
 
+# virtualenvs folder
+.virtualenvs/
+
+# binary folder
+bin/
+
 # project report files
-**/pytest.report.html
-**/requirements.freeze.tests.txt
-**/requirements.freeze.txt
-**/requirements.pkg.freeze.txt
+#**/pytest.report.html
+**/requirements.*.freeze.*
+#**/requirements.freeze.txt
+#**/requirements.pkg.freeze.txt
 
 /requirements.functions.txt
 /requirements.pkg.freeze.awscli.txt
