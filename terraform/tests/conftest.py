@@ -39,7 +39,9 @@ def get_git_commit_hash() -> str:
 
 @pytest.fixture(scope="session")
 def version() -> str:
-    full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.toml")
+    full_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "../../config.toml"
+    )
     config = toml.load(full_path)
     base_version = config["version"]
     return "{}.{}".format(base_version, get_git_commit_hash())
@@ -63,5 +65,6 @@ def aws_region(version) -> str:
 
 @pytest.fixture(scope="session")
 def terraform_bin_path() -> str:
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                        "../../bin/terraform")
+    return os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "../../bin/terraform"
+    )

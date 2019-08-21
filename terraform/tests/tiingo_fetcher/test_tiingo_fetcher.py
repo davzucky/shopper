@@ -6,7 +6,7 @@ import botocore
 import botostubs
 import pytest
 
-from tiingo_fetcher.aws_helpers import download_file_from_S3_to_temp
+from .aws_helpers import download_file_from_S3_to_temp
 from .message import Message
 
 
