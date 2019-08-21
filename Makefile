@@ -9,8 +9,15 @@ TERRAFORM_CONFIG_FOLDER = $(abspath ./terraform/$(PROJECT_NAME))
 
 
 format-code: ## Format terraform code of the lamdba and terraform
+	@echo -e "\e[32m==> Format code $@\e[0m"
+	@echo -e "\e[32m====> Format Lambda code $@\e[0m"
 	$(SELF) python/lambda/format-code
+	@echo -e "\e[32m====> Format terraform code $@\e[0m"
 	$(SELF) terraform/format-code
+	@echo -e "\e[32m====> Format terraform test code $@\e[0m"
+	$(SELF) python/format-code BLACK_FOLDER=./terraform
+	@echo -e "\e[32m====> Format shared code $@\e[0m"
+	$(SELF) python/format-code BLACK_FOLDER=./shared
 
 linter: ## Format terraform code of the lamdba and terraform
 #	$(SELF) python/lambda/format-code
