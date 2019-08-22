@@ -59,13 +59,13 @@ jobs:
           command: |
             make terraform/test
       - store_test_results:
-          path: ./results
+          path: ./results/terraform_test
       - store_artifacts:
-          path: ./results
+          path: ./results/terraform_test
       - persist_to_workspace:
           root: .
           paths:
-            - ./results/terraform/*
+            - ./results/terraform_test/*
 
   create-terraform-package:
     executor: lambda-executor
