@@ -26,6 +26,12 @@ linter: ## Format terraform code of the lamdba and terraform
 #	 TERRAFORM_CONFIG_FOLDER=terraform/shopper/
 
 
+test-package-test: ## Test lambda, package them and test terraform
+	$(SELF) python/lambda/test-all
+	$(SELF) python/lambda/package
+	$(SELF) terraform/test
+
+
 
 apply-staging: ## Apply config to staging
 	$(SELF) terraform/apply-workspace TERRAFORM_WORKSPACE_NAME=staging
