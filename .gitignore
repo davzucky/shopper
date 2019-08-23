@@ -135,5 +135,6 @@ bin/
 **/packages
 terraform/**/variable.version.tf
 /**/.terraform/
+.terraform.tfstate.lock.info
 *.tfstate
 *.tfstate.backup
