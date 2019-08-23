@@ -1,4 +1,3 @@
-
 terraform {
   required_version = ">= 0.12"
 }
@@ -9,7 +8,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "test_tiingo" {
-  bucket = "market-data-tiingo-fetch-${lower(var.environment)}"
+  bucket = "market-data-${lower(var.environment)}"
   region = var.aws_region
 }
 
