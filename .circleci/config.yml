@@ -6,7 +6,7 @@ executors:
 #    working_directory: /tmp
 
 jobs:
-  test-local-venv:
+  test-python-lambdas:
     executor: lambda-executor
     #    docker:
     #      - image: circleci/python:3.7.2
@@ -73,17 +73,13 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: check folder content
-          command: |
-            ls -ali terraform/shopper/packages/
-      - run:
           name: create terraform package
           command: |
-            make create-terraform-package
+            make terraform/create-package TERRAFORM_OUTPUT_PACKAGE=./terraform_module
       - persist_to_workspace:
           root: .
           paths:
-            - ./terraform_module/*
+            - ./terraform_module/
       - store_artifacts:
           path: ./terraform_module
 
@@ -101,22 +97,23 @@ workflows:
   version: 2
   test local venv:
     jobs:
-      - test-local-venv
+      - test-python-lambdas
       - build-lambda-packages:
           requires:
-            - test-local-venv
+            - test-python-lambdas
       - test-terraform-modules:
           requires:
             - build-lambda-packages
+      - create-terraform-package:
+          requires:
+            - test-terraform-modules
+          filters:
+            branches:
+              only: master
+
 #      - test-terraform-modules:
 #          requires:
 #            - build-lambda-packages
-#      - create-terraform-package:
-#          requires:
-#            - test-terraform-modules
-#          filters:
-#            branches:
-#              only: master
 #      - push-terraform-module-to-s3:
 #          requires:
 #            - create-terraform-package
