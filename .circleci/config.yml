@@ -42,7 +42,7 @@ jobs:
       - run:
           name: build lambda packages
           command: |
-            make python/lambda/package
+            make python/lambda/create-package
       - persist_to_workspace:
           root: .
           paths:
