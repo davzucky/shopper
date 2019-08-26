@@ -28,7 +28,7 @@ linter: ## Format terraform code of the lamdba and terraform
 
 test-package-test: ## Test lambda, package them and test terraform
 	$(SELF) python/lambda/test-all
-	$(SELF) python/lambda/package
+	$(SELF) python/lambda/create-package
 	$(SELF) terraform/test
 
 

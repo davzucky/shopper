@@ -119,7 +119,7 @@ bin/
 
 # project report files
 #**/pytest.report.html
-**/requirements.*.freeze.*
+**/requirements.*.freeze*
 #**/requirements.freeze.txt
 #**/requirements.pkg.freeze.txt
 
