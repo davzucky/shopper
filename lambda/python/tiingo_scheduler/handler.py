@@ -1,3 +1,5 @@
+import base64
+import json
 import logging
 import os
 import tempfile
@@ -24,8 +26,9 @@ logger = daiquiri.getLogger(__name__)
 
 AWS_REGION = "AWS_REGION"
 AWS_S3_BUCKET = "AWS_S3_BUCKET"
-TIINGO_FETCHER_QUEUE = "TIINGO_FETCHER_QUEUE"
+TIINGO_FETCHER_FUNCTION_NAME = "TIINGO_FETCHER_FUNCTION_NAME"
 TIINGO_TICKERS_FILE = "TIINGO_TICKERS_FILE"
+LAMBDA_INVOCATION_TYPE = "LAMBDA_INVOCATION_TYPE"
 
 
 @dataclass(eq=True, frozen=True)
@@ -63,19 +66,21 @@ class Filter(DataClassJsonMixin):
 def handler(filters: List[Dict[str, str]], context):
     region = get_env_variable(AWS_REGION)
     bucket = get_env_variable(AWS_S3_BUCKET)
-    sqs_queue_name = get_env_variable(TIINGO_FETCHER_QUEUE)
+    target_function_name = get_env_variable(TIINGO_FETCHER_FUNCTION_NAME)
     tiingo_tickers = get_env_variable_or_default(
         TIINGO_TICKERS_FILE, "tiingo/tickers.csv"
     )
+    invocation_type = get_env_variable_or_default(
+        LAMBDA_INVOCATION_TYPE, "Event"
+    )
 
     tiingo_filters = Filter.schema().load(filters, many=True)
-    logger.info(f"Number of filters : {len(tiingo_filters)}")
+    logger.debug(f"Number of filters : {len(tiingo_filters)}")
 
     tiingo_tickers_path = os.path.join(tempfile.gettempdir(), "tiingo_tickers.csv")
     download_file_from_S3_to_temp(region, bucket, tiingo_tickers, tiingo_tickers_path)
 
-    sqs = boto3.resource("sqs", region_name=region)
-    queue = sqs.get_queue_by_name(QueueName=sqs_queue_name)
+    lambda_client = boto3.client("lambda", region_name=region)
 
     nb_msg_send = 0
     for tiingo_filter in tiingo_filters:
@@ -86,17 +91,31 @@ def handler(filters: List[Dict[str, str]], context):
         for tiingo_tickers in grouper(10, tickers):
             nb_msg_send += len(tiingo_tickers)
             messages = [
-                {
-                    "Id": tiingo_ticker.ticker,
-                    "MessageBody": Message(
-                        tiingo_ticker.ticker,
-                        f"market_data/{tiingo_ticker.ticker}/1d/data.csv",
-                    ).to_json(),
-                }
+                Message(
+                    tiingo_ticker.ticker,
+                    f"market_data/{tiingo_ticker.ticker}/1d/data.csv",
+                )
                 for tiingo_ticker in tiingo_tickers
                 if tiingo_ticker is not None
             ]
-            logger.debug(f"send -> {messages}")
-            queue.send_messages(Entries=messages)
+            event = {"records": Message.schema().dump(messages, many=True)}
+            payload = json.dumps(event)
+            logger.debug(f"send -> {payload}")
 
+            lambda_call_result = lambda_client.invoke(
+                FunctionName=target_function_name,
+                InvocationType=invocation_type,
+                Payload=payload,
+            )
+
+            if lambda_call_result["StatusCode"] in (200, 202, 204) and (
+                 "FunctionError" not in lambda_call_result.keys()
+            ):
+                continue
+            error_msg = f"Call to {target_function_name} Error. \
+                {lambda_call_result['FunctionError']}-\
+                {base64.b64decode(lambda_call_result['LogResult']).decode('utf-8')}"
+
+            logger.error(error_msg)
+            raise Exception(error_msg)
     logger.info(f"Numbers of messages sent: {nb_msg_send}")
