@@ -18,5 +18,5 @@ def get_messages_from_records(event: Dict[str, Any]) -> Iterable[Message]:
     if len(event) == 0:
         return
 
-    for record in event["Records"]:
+    for record in event["records"]:
         yield get_message(record)

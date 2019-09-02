@@ -1,0 +1,4 @@
+boto3==1.9.180
+dataclasses-json==0.2.7
+moto==1.3.9
+daiquiri==1.5.0
