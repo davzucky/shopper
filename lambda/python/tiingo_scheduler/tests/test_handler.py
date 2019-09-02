@@ -107,7 +107,7 @@ def test_number_of_message_sent(
     monkeypatch.setenv(AWS_REGION, region)
     monkeypatch.setenv(TIINGO_FETCHER_FUNCTION_NAME, function_name)
     monkeypatch.setenv(TIINGO_TICKERS_FILE, tiingo_file_path)
-    monkeypatch.setenv(LAMBDA_INVOCATION_TYPE, "RequestResponse")
+    monkeypatch.setenv(LAMBDA_INVOCATION_TYPE, "DryRun")
 
     with setup_s3_bucket(region, bucket_name):
         with setup_aws_lambda(region, function_name, lambda_function_str):
