@@ -4,9 +4,8 @@ from typing import List, Dict
 
 import boto3
 import pytest
-from moto import mock_lambda
 
-from .aws_moto_test import setup_s3_bucket, setup_aws_lambda
+from .aws_moto_test import setup_s3_bucket
 from ..handler import (
     AWS_S3_BUCKET,
     AWS_REGION,
