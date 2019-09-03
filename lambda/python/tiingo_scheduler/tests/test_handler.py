@@ -85,7 +85,7 @@ def get_function_string():
         ),
     ],
 )
-@pytest.skip("Problem running test on circleci. Will have to check")
+@pytest.mark.skip("Problem running test on circleci. Will have to check")
 def test_number_of_message_sent(
     monkeypatch,
     caplog,
