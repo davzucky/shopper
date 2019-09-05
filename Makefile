@@ -8,6 +8,12 @@ TERRAFORM_CONFIG_FOLDER = $(abspath ./terraform/$(PROJECT_NAME))
 -include $(BUILD_HARNESS_PATH)/modules/Makefile.share.variables
 
 
+test/python: ## Test all lambda and share code
+	@echo -e "\e[32m==> Test all python code $@\e[0m"
+	@echo -e "\e[32m====> Format Lambda code $@\e[0m"
+	$(SELF) python/lambda/test-all
+
+
 format-code: ## Format terraform code of the lamdba and terraform
 	@echo -e "\e[32m==> Format code $@\e[0m"
 	@echo -e "\e[32m====> Format Lambda code $@\e[0m"
