@@ -1,7 +1,7 @@
-output "function_name" {
+output "name" {
   value = aws_lambda_function.tiingo_fetcher_lambda_function.function_name
 }
 
-output "function_arn" {
+output "arn" {
   value = aws_lambda_function.tiingo_fetcher_lambda_function.arn
 }
