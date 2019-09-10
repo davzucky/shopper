@@ -10,14 +10,14 @@ variable "share_variables" {
 
 // Module specific variables
 
+variable "tiingo_fetcher_arn" {
+  type        = "string"
+  description = "arn of the target lambda"
+}
+
 variable "s3_market_data_bucket" {
   type        = "string"
   description = "The name of the S3 storage where the market data has to be saved"
-}
-
-variable "trigger_sqs_arn" {
-  type        = "string"
-  description = "arn of the sqs queue that the trigger has to listen to"
 }
 
 variable "tiingo_tickers_file_path" {

@@ -19,15 +19,9 @@ locals {
 //}
 
 
-module "sqs" {
-  source          = "./modules/sqs"
-  share_variables = local.share_variable
-}
-
 module "tiingo_fetcher" {
   source                = "./modules/tiingo_fetcher"
   s3_market_data_bucket = var.S3_market_data_bucket
-  trigger_sqs_arn       = module.sqs.tiingo_fetcher.arn
   tiingo_api_key        = var.tiingo_api_key
   share_variables       = local.share_variable
 }
@@ -37,6 +31,6 @@ module "tiingo_scheduler" {
   share_variables          = local.share_variable
   s3_market_data_bucket    = var.S3_market_data_bucket
   tiingo_tickers_file_path = local.tiingo_ticker_file_path
-  trigger_sqs_arn          = module.sqs.tiingo_fetcher.name
+  tiingo_fetcher_arn       = module.tiingo_fetcher.function_arn
 }
 

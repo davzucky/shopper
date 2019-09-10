@@ -26,21 +26,6 @@ resource "aws_iam_policy" "bloomberg_lambda" {
 
 data "aws_iam_policy_document" "tiingo_scheduler_lambda" {
   statement {
-    sid    = "AllowSQSPermissions"
-    effect = "Allow"
-    resources = [
-    "arn:aws:sqs:*"]
-
-    actions = [
-      "sqs:SendMessage",
-      "sqs:SendMessageBatch",
-      "sqs:ChangeMessageVisibility",
-      "sqs:GetQueueAttributes",
-      "sqs:GetQueueUrl",
-    ]
-  }
-
-  statement {
     sid    = "AllowInvokingLambdas"
     effect = "Allow"
     resources = [

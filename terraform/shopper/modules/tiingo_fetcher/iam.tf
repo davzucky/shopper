@@ -26,19 +26,6 @@ resource "aws_iam_policy" "bloomberg_lambda" {
 
 data "aws_iam_policy_document" "tiingo_fetcher_lambda" {
   statement {
-    sid       = "AllowSQSPermissions"
-    effect    = "Allow"
-    resources = ["arn:aws:sqs:*"]
-
-    actions = [
-      "sqs:ChangeMessageVisibility",
-      "sqs:DeleteMessage",
-      "sqs:GetQueueAttributes",
-      "sqs:ReceiveMessage",
-    ]
-  }
-
-  statement {
     sid       = "AllowInvokingLambdas"
     effect    = "Allow"
     resources = ["arn:aws:lambda:${var.share_variables.region}:*:function:*"]

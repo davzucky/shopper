@@ -17,10 +17,11 @@ resource "aws_lambda_function" "tiingo_scheduler_lambda_function" {
 
   environment {
     variables = {
-      "AWS_S3_BUCKET"        = var.s3_market_data_bucket
-      "TIINGO_FETCHER_QUEUE" = var.trigger_sqs_arn
-      "TIINGO_TICKERS_FILE"  = var.tiingo_tickers_file_path
-      "LAMBDA_LOGGING_LEVEL" = var.share_variables.loging_level
+      "AWS_S3_BUCKET"          = var.s3_market_data_bucket
+      "TIINGO_TICKERS_FILE"    = var.tiingo_fetcher_arn
+      "LAMBDA_INVOCATION_TYPE" = "Event"
+      "TIINGO_TICKERS_FILE"    = var.tiingo_tickers_file_path
+      "LAMBDA_LOGGING_LEVEL"   = var.share_variables.loging_level
     }
   }
 }

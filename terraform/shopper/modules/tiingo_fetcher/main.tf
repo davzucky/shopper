@@ -22,10 +22,3 @@ resource "aws_lambda_function" "tiingo_fetcher_lambda_function" {
     }
   }
 }
-
-resource "aws_lambda_event_source_mapping" "tiingo_fetcher_sqs_trigger" {
-  batch_size       = 1
-  event_source_arn = var.trigger_sqs_arn
-  enabled          = true
-  function_name    = aws_lambda_function.tiingo_fetcher_lambda_function.arn
-}
