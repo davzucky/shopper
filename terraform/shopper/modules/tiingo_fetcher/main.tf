@@ -17,8 +17,9 @@ resource "aws_lambda_function" "tiingo_fetcher_lambda_function" {
 
   environment {
     variables = {
-      "AWS_S3_BUCKET"  = var.s3_market_data_bucket
-      "TIINGO_API_KEY" = var.tiingo_api_key
+      "AWS_S3_BUCKET"        = var.s3_market_data_bucket
+      "TIINGO_API_KEY"       = var.tiingo_api_key
+      "LAMBDA_LOGGING_LEVEL" = var.share_variables.loging_level
     }
   }
 }

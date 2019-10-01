@@ -18,10 +18,10 @@ resource "aws_lambda_function" "tiingo_scheduler_lambda_function" {
   environment {
     variables = {
       "AWS_S3_BUCKET"          = var.s3_market_data_bucket
-      "TIINGO_TICKERS_FILE"    = var.tiingo_fetcher_arn
       "LAMBDA_INVOCATION_TYPE" = "Event"
       "TIINGO_TICKERS_FILE"    = var.tiingo_tickers_file_path
       "LAMBDA_LOGGING_LEVEL"   = var.share_variables.loging_level
+      "TIINGO_FETCHER_FUNCTION_NAME" = var.tiingo_fetcher_arn
     }
   }
 }
@@ -36,7 +36,7 @@ resource "aws_cloudwatch_event_target" "run_tiingo_scheduler_Every_day_HK_8pm" {
   rule      = aws_cloudwatch_event_rule.Every_day_HK_8pm.name
   target_id = "Load_HK_Market_Data"
   arn       = aws_lambda_function.tiingo_scheduler_lambda_function.arn
-  input     = "[{\"exchange\": \"SHE\"}, {\"exchange\": \"SHG\"}]"
+  input     = "{\"filters\": [{\"exchange\": \"SHE\"}, {\"exchange\": \"SHG\"}]}"
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_tiingo_scheduler" {
