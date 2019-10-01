@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import List, Dict
+from typing import List, Dict, Any
 
 import boto3
 import pytest
@@ -53,7 +53,7 @@ def get_function_string():
         (
             LAMBDA_FUNCTION_CODE,
             f"{header}\n{message_1}",
-            [{}],
+            {"filters": [{}]},
             ["000001", "000002"],
             0,
             1,
@@ -61,7 +61,7 @@ def get_function_string():
         (
             LAMBDA_FUNCTION_CODE,
             f"{header}\n{message_2}",
-            [{"exchange": "NYSE", "asset_type": "ETF"}],
+            {"filters": [{"exchange": "NYSE", "asset_type": "ETF"}]},
             ["PZA"],
             0,
             1,
@@ -69,7 +69,7 @@ def get_function_string():
         (
             LAMBDA_FUNCTION_CODE,
             f"{header}\n{message_2}\n{message_1}",
-            [{}],
+            {"filters": [{}]},
             ["000001", "000002", "PZA", "PZA1", "PZAAX"],
             0,
             1,
@@ -77,7 +77,7 @@ def get_function_string():
         (
             LAMBDA_FUNCTION_CODE,
             f"{header}\n{message_2}\n{message_1}",
-            [{"asset_type": "Stock"}, {"asset_type": "ETF"}],
+            {"filters": [{"asset_type": "Stock"}, {"asset_type": "ETF"}]},
             ["000001", "000002", "PZA", "PZA1"],
             0,
             1,
@@ -91,7 +91,7 @@ def test_number_of_message_sent(
     # tmpdir,
     lambda_function_str,
     tiingo_tickers_csv_content: str,
-    filter: List[Dict[str, str]],
+    filter: Dict[str, Any],
     tickers: List[str],
     nb_error,
     nb_info,
@@ -111,9 +111,7 @@ def test_number_of_message_sent(
     with setup_s3_bucket(region, bucket_name):
         # with setup_aws_lambda(region, function_name, lambda_function_str):
         boto3.client("s3", region_name=region).put_object(
-            Bucket=bucket_name,
-            Key=tiingo_file_path,
-            Body=tiingo_tickers_csv_content,
+            Bucket=bucket_name, Key=tiingo_file_path, Body=tiingo_tickers_csv_content
         )
         caplog.set_level(logging.ERROR)
         caplog.set_level(logging.INFO)
@@ -127,9 +125,5 @@ def test_number_of_message_sent(
             ]
         )
         assert nb_info == len(
-            [
-                msg
-                for (fct, level, msg) in caplog.record_tuples
-                if level == logging.INFO
-            ]
+            [msg for (fct, level, msg) in caplog.record_tuples if level == logging.INFO]
         )

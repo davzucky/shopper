@@ -4,7 +4,7 @@ import logging
 import os
 import tempfile
 from dataclasses import dataclass
-from typing import Optional, Iterable, Dict, List
+from typing import Optional, Iterable, Dict, Any
 
 import boto3
 import daiquiri
@@ -63,17 +63,16 @@ class Filter(DataClassJsonMixin):
         ) and ((self.exchange is None) or (self.exchange == tiingo_ticker.exchange))
 
 
-def handler(filters: List[Dict[str, str]], context):
+def handler(message: Dict[str, Any], context):
     region = get_env_variable(AWS_REGION)
     bucket = get_env_variable(AWS_S3_BUCKET)
     target_function_name = get_env_variable(TIINGO_FETCHER_FUNCTION_NAME)
     tiingo_tickers = get_env_variable_or_default(
         TIINGO_TICKERS_FILE, "tiingo/tickers.csv"
     )
-    invocation_type = get_env_variable_or_default(
-        LAMBDA_INVOCATION_TYPE, "Event"
-    )
-
+    invocation_type = get_env_variable_or_default(LAMBDA_INVOCATION_TYPE, "Event")
+    filters = message["filters"]
+    base_path = message.get("base_path", "market_data")
     tiingo_filters = Filter.schema().load(filters, many=True)
     logger.debug(f"Number of filters : {len(tiingo_filters)}")
 
@@ -93,7 +92,7 @@ def handler(filters: List[Dict[str, str]], context):
             messages = [
                 Message(
                     tiingo_ticker.ticker,
-                    f"market_data/{tiingo_ticker.ticker}/1d/data.csv",
+                    f"{base_path}/{tiingo_ticker.ticker}/1d/data.csv",
                 )
                 for tiingo_ticker in tiingo_tickers
                 if tiingo_ticker is not None
@@ -109,7 +108,7 @@ def handler(filters: List[Dict[str, str]], context):
             )
 
             if lambda_call_result["StatusCode"] in (200, 202, 204) and (
-                 "FunctionError" not in lambda_call_result.keys()
+                "FunctionError" not in lambda_call_result.keys()
             ):
                 continue
             error_msg = f"Call to {target_function_name} Error. \
