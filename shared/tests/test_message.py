@@ -15,8 +15,7 @@ def test_return_empty_list_when_no_event():
             {
                 "records": [
                     {
-                        "body": '{"ticker": "ticker.test", "file_path": '
-                        '"/temp/ticker.test.csv"} '
+                        "ticker": "ticker.test", "file_path": "/temp/ticker.test.csv"
                     }
                 ]
             },
@@ -26,12 +25,10 @@ def test_return_empty_list_when_no_event():
             {
                 "records": [
                     {
-                        "body": '{"ticker": "ticker1.test", "file_path": '
-                        '"/temp/ticker1.test.csv"} '
+                        "ticker": "ticker1.test", "file_path": "/temp/ticker1.test.csv"
                     },
                     {
-                        "body": '{"ticker": "ticker2.test", "file_path": '
-                        '"/temp/ticker2.test.csv"} '
+                        "ticker": "ticker2.test", "file_path": "/temp/ticker2.test.csv"
                     },
                 ]
             },

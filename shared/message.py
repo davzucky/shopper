@@ -11,7 +11,7 @@ class Message(DataClassJsonMixin):
 
 
 def get_message(record: Dict[str, Any]) -> Message:
-    return Message.from_json(record["body"])
+    return Message.schema().load(record)
 
 
 def get_messages_from_records(event: Dict[str, Any]) -> Iterable[Message]:
