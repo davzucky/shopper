@@ -7,7 +7,7 @@ from python_terraform import Terraform
 full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terraform")
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def setup_terraform(version, environment, aws_region, terraform_bin_path):
     print(f"deploy test to region {aws_region}")
 
