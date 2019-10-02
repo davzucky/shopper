@@ -8,57 +8,27 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "test_tiingo" {
-  bucket = "market-data-${lower(var.environment)}"
-  region = var.aws_region
+  bucket        = "market-data-${lower(var.environment)}"
+  region        = var.aws_region
+  force_destroy = true
 }
 
-module "tiingo_fetcher" {
-  source                = "../../../shopper"
-  environment           = var.environment
-  region                = var.aws_region
-  S3_market_data_bucket = aws_s3_bucket.test_tiingo.bucket
-  tiingo_api_key        = var.tiingo_api_key
-  //    share_variables = {
-  //    version = var.module_version
-  //    environment = var.environment
-  //    loging_level = "DEBUG"
-  //    region = var.aws_region
-  //  }
-  //  s3_market_data_bucket = aws_s3_bucket.test_tiingo.bucket
-  //  tiingo_api_key = var.tiingo_api_key
-  //  trigger_sqs_arn = aws_sqs_queue.test_tiingo.arn
+resource "aws_s3_bucket_object" "tickers" {
+  bucket = aws_s3_bucket.test_tiingo.bucket
+  key    = "static/tiingo_tickers.csv"
+  source = "./supported_tickers.csv"
 }
 
-variable "module_version" {
-  type        = "string"
-  description = "version of the module"
-}
-
-variable "tiingo_api_key" {
-  type        = "string"
-  description = "Tiingo api Key"
-}
-
-variable "aws_region" {
-  type        = "string"
-  description = "aws region where to deploy"
-}
-
-variable "environment" {
-  type        = "string"
-  description = "Name of the environmenet"
+module "shopper" {
+  source                   = "../../../shopper"
+  tiingo_tickers_file_path = aws_s3_bucket_object.tickers.key
+  loging_level             = "DEBUG"
+  environment              = var.environment
+  region                   = var.aws_region
+  S3_market_data_bucket    = aws_s3_bucket.test_tiingo.bucket
+  tiingo_api_key           = var.tiingo_api_key
 }
 
 
 
-output "s3_bucket_name" {
-  value = aws_s3_bucket.test_tiingo.bucket
-}
 
-//output "lambda_function_name" {
-//  value = module.tiingo_fetcher.function_name
-//}
-
-output "region" {
-  value = var.aws_region
-}
