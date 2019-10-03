@@ -96,7 +96,7 @@ def test_lambda_trigger_is_sqs(clean_aws_resources, terraform_output, tmpdir, s3
     bucket_name = terraform_output["s3_bucket_name"]["value"]
 
     tickers = ["AAPL", "MSFT"]
-    messages = [json.load(Message(ticker, f"{s3_base_path}/{ticker}/1D/marketdata.csv").to_json()) for ticker in tickers]
+    messages = [json.loads(Message(ticker, f"{s3_base_path}/{ticker}/1D/marketdata.csv").to_json()) for ticker in tickers]
     request = {"records": messages}
     payload = json.dumps(request)
 
