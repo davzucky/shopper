@@ -8,7 +8,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "test_tiingo" {
-  bucket        = "market-data-${lower(var.environment)}"
+  bucket        = var.s3_bucker_name
   region        = var.aws_region
   force_destroy = true
 }

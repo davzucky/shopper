@@ -8,7 +8,7 @@ full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "terraform"
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_terraform(version, environment, aws_region, terraform_bin_path):
+def setup_terraform(version, environment, aws_region, terraform_bin_path, s3_bucket_name):
     print(f"deploy test to region {aws_region}")
 
     tf = Terraform(working_dir=full_path, terraform_bin_path=terraform_bin_path)
@@ -17,6 +17,7 @@ def setup_terraform(version, environment, aws_region, terraform_bin_path):
         "tiingo_api_key": os.environ.get("TIINGO_API_KEY"),
         "aws_region": aws_region,
         "environment": environment,
+        "s3_bucker_name": s3_bucket_name
     }
 
     tf.init()
@@ -35,6 +36,10 @@ def setup_terraform(version, environment, aws_region, terraform_bin_path):
         print(err)
         raise Exception("Error detroying terraform. Error \n {}".format(err))
 
+
+@pytest.fixture(scope="session")
+def s3_bucket_name(environment):
+    return f"market-data-{environment.lower()}"
 
 @pytest.fixture()
 def terraform_output(setup_terraform, terraform_bin_path) -> Dict[str, Dict[str, str]]:
