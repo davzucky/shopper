@@ -1,6 +1,8 @@
 import boto3
+import daiquiri
 from botocore.exceptions import ClientError
 
+logger = daiquiri.getLogger(__name__)
 
 def get_matching_s3_objects(bucket, prefix="", suffix=""):
     """
@@ -55,20 +57,23 @@ def download_file_from_S3_to_temp(region_name, bucket_name, file_key, tmp_path) 
     s3 = boto3.resource("s3", region_name=region_name)
 
     try:
+        logger.debug(f"Download key {file_key} to {tmp_path} "
+                     f"from the bucket {bucket_name}")
+
         s3.Bucket(bucket_name).download_file(file_key, tmp_path)
     except ClientError as e:
         if e.response["Error"]["Code"] == "404":
-            print("The object does not exist.")
+            logger.error(f"The object {file_key}  does not exist.")
         else:
             raise
 
 
 def upload_file_from_local_to_S3(region_name, bucket_name, file_key, tmp_path) -> None:
-    s3 = boto3.client("s3")  # , region_name=region_name)
+    s3 = boto3.client("s3")
     try:
         s3.upload_file(file_key, bucket_name, tmp_path)
     except ClientError as e:
         if e.response["Error"]["Code"] == "404":
-            print("The object does not exist.")
+            logger.error(f"The object {file_key}  does not exist.")
         else:
             raise
