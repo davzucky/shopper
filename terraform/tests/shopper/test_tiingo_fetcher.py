@@ -92,7 +92,7 @@ def test_tiingo_fetcher_s3_bucket_is_set_with_right_value(terraform_output, s3_b
 #
 #
 
-def test_lambda_trigger_is_sqs(clean_aws_resources, terraform_output, tmpdir, s3_base_path):
+def test_lambda_download_files_from_tiingo(clean_aws_resources, terraform_output, tmpdir, s3_base_path):
     tiingo_fetcher_fnct_name = terraform_output["tiingo_fetcher_name"]["value"]
     region = terraform_output["region"]["value"]
     bucket_name = terraform_output["s3_bucket_name"]["value"]
