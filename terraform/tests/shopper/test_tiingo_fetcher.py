@@ -69,29 +69,6 @@ def test_tiingo_fetcher_s3_bucket_is_set_with_right_value(terraform_output, s3_b
     lambda_function_check_env_var_value(lambda_function_name, region, env_var, s3_bucket_name)
 
 
-
-# def test_lambda_has_one_trigger_mapped_to(terraform_output):
-#     function_name = terraform_output["lambda_function_name"]["value"]
-#     region = terraform_output["region"]["value"]
-#     lambda_client = boto3.client("lambda", region_name=region)  # type: botostubs.Lambda
-#     lambda_tiingo = lambda_client.list_event_source_mappings(FunctionName=function_name)
-#
-#     assert len(lambda_tiingo["EventSourceMappings"]) == 1
-#
-#
-# def test_lambda_deployement_values(terraform_output):
-#     function_name = terraform_output["lambda_function_name"]["value"]
-#     region = terraform_output["region"]["value"]
-#     lambda_client = boto3.client("lambda", region_name=region)  # type: botostubs.Lambda
-#     lambda_tiingo = lambda_client.list_event_source_mappings(FunctionName=function_name)
-#
-#     assert (
-#         terraform_output["sqs_queue_arn"]["value"]
-#         == lambda_tiingo["EventSourceMappings"][0]["EventSourceArn"]
-#     )
-#
-#
-
 def test_lambda_download_files_from_tiingo(clean_aws_resources, terraform_output, tmpdir, s3_base_path):
     tiingo_fetcher_fnct_name = terraform_output["tiingo_fetcher_name"]["value"]
     region = terraform_output["region"]["value"]
