@@ -38,13 +38,13 @@ def clean_aws_resources(terraform_output, s3_base_path, s3_bucket_name):
 def test_tiingo_fetcher_lambda_setup(terraform_output):
     lambda_function_name = terraform_output["tiingo_fetcher_name"]["value"]
     region = terraform_output["region"]["value"]
-    expected_timeout = 60
+    expected_timeout = 300
 
     lambda_function_check_setup(lambda_function_name, region, expected_timeout)
 
 
 @pytest.mark.parametrize(
-    "env_var", [("TIINGO_API_KEY"), ("AWS_S3_BUCKET"), ("AWS_REGION")]
+    "env_var", [("TIINGO_API_KEY"), ("AWS_S3_BUCKET")]
 )
 def test_tiingo_fetcher_contain_env_var(terraform_output, env_var: str):
 

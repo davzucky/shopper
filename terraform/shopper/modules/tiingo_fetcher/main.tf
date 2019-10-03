@@ -10,7 +10,7 @@ resource "aws_lambda_function" "tiingo_fetcher_lambda_function" {
   role             = aws_iam_role.tiingo_fetcher_lambda.arn
   runtime          = "python3.7"
   source_code_hash = filebase64sha256(local.zip_file_path)
-  timeout          = "60"
+  timeout          = "300"
   tags = {
     version = var.share_variables.version
   }

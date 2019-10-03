@@ -110,7 +110,7 @@ def test_lambda_trigger_is_sqs(
     assert 200 == invoke_result["StatusCode"]
 
     start_time = datetime.now()
-    max_wait_time_s = 240
+    max_wait_time_s = 300
     result_file_keys = set(
         [f"{base_path}/{ticker}/1d/data.csv" for ticker in expect_items]
     )
