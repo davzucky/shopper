@@ -1,10 +1,12 @@
 import json
 import os
+import sys
 
 import boto3
 import botostubs
 import pytest
 
+from terraform.tests.shopper.aws_helpers import download_file_from_S3_to_temp
 from terraform.tests.shopper.share import lambda_function_check_setup, \
     lambda_function_setup_contain_env_var, lambda_function_check_env_var_value
 from .message import Message
@@ -95,8 +97,10 @@ def test_lambda_trigger_is_sqs(clean_aws_resources, terraform_output, tmpdir, s3
     region = terraform_output["region"]["value"]
     bucket_name = terraform_output["s3_bucket_name"]["value"]
 
-    tickers = ["AAPL", "MSFT"]
-    messages = [json.loads(Message(ticker, f"{s3_base_path}{ticker}/1D/marketdata.csv").to_json()) for ticker in tickers]
+    tickers = [{"ticker": "AAPL", "nbRows": 9683}, {"ticker": "MSFT", "nbRows": 8460}]
+    messages = [json.loads(Message(ticker['ticker'],
+                f"{s3_base_path}{ticker['ticker']}/1D/marketdata.csv").to_json())
+                for ticker in tickers]
     request = {"records": messages}
     payload = json.dumps(request)
 
@@ -111,35 +115,16 @@ def test_lambda_trigger_is_sqs(clean_aws_resources, terraform_output, tmpdir, s3
     assert 200 == lambda_call_result["StatusCode"]
     assert "Handled" == lambda_call_result.get("FunctionError", "Handled")
 
+    def get_num_rows(ticker: str) -> int:
+        for tick_info in [t for t in tickers if t['ticker'] == ticker]:
+            return tick_info ['nbRows']
+        return sys.maxsize
 
-    #
-    # s3 = boto3.resource("s3", region_name=region)  # type: botostubs.S3
-    #
-    # max_try = 120
-    # for i in range(max_try + 1):
-    #     try:
-    #         s3.Object(bucket_name, bucker_file_key).load()
-    #     except botocore.exceptions.ClientError as e:
-    #         if e.response["Error"]["Code"] == "404":
-    #             if i < max_try:
-    #                 time.sleep(0.5)
-    #                 continue
-    #             else:
-    #                 # The object does not exist.
-    #                 AssertionError(
-    #                     e.response["Error"],
-    #                     "The file {} has not been saved to s3".format(bucker_file_key),
-    #                 )
-    #         else:
-    #             # Something else has gone wrong.
-    #             raise
-    #     else:
-    #         break
-    #
-    # local_path = os.path.join(tmpdir.dirname, "appl.csv")
-    # download_file_from_S3_to_temp(region, bucket_name, bucker_file_key, local_path)
-    #
-    # with open(local_path, "r") as f:
-    #     lines = [l for l in f.readlines()]
-    #     # 9683 is the number of row as of 9th of May 2019
-    #     assert len(lines) >= 9683
+    for message in messages:
+        local_path = os.path.join(tmpdir.dirname, f"{message['ticker']}.csv")
+        download_file_from_S3_to_temp(region, bucket_name, message['file_path'], local_path)
+
+        with open(local_path, "r") as f:
+            lines = [l for l in f.readlines()]
+            # 9683 is the number of row as of 9th of May 2019
+            assert len(lines) >= get_num_rows(message['ticker'])
