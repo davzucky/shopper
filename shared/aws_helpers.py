@@ -4,6 +4,7 @@ from botocore.exceptions import ClientError
 
 logger = daiquiri.getLogger(__name__)
 
+
 def get_matching_s3_objects(bucket, prefix="", suffix=""):
     """
     Generate objects in an S3 bucket.
@@ -57,8 +58,9 @@ def download_file_from_S3_to_temp(region_name, bucket_name, file_key, tmp_path) 
     s3 = boto3.resource("s3", region_name=region_name)
 
     try:
-        logger.debug(f"Download key {file_key} to {tmp_path} "
-                     f"from the bucket {bucket_name}")
+        logger.debug(
+            f"Download key {file_key} to {tmp_path} " f"from the bucket {bucket_name}"
+        )
 
         s3.Bucket(bucket_name).download_file(file_key, tmp_path)
     except ClientError as e:

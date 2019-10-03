@@ -108,6 +108,7 @@ def test_lambda_trigger_is_sqs(
     )
 
     assert 200 == invoke_result["StatusCode"]
+    assert "Handled" == invoke_result.get("FunctionError", "Handled")
 
     start_time = datetime.now()
     max_wait_time_s = 300
