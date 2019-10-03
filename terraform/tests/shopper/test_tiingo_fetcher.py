@@ -6,8 +6,8 @@ import boto3
 import botostubs
 import pytest
 
-from terraform.tests.shopper.aws_helpers import download_file_from_S3_to_temp
-from terraform.tests.shopper.share import (
+from .aws_helpers import download_file_from_S3_to_temp
+from .share import (
     lambda_function_check_setup,
     lambda_function_setup_contain_env_var,
     lambda_function_check_env_var_value,
@@ -57,7 +57,9 @@ def test_tiingo_fetcher_contain_env_var(terraform_output, env_var: str):
 @pytest.mark.parametrize(
     "env_var, value", [("TIINGO_API_KEY", os.environ.get("TIINGO_API_KEY"))]
 )
-def test_tiingo_fetcher_contain_env_var(terraform_output, env_var: str, value: str):
+def test_tiingo_fetcher_env_var_has_right_value(
+    terraform_output, env_var: str, value: str
+):
     lambda_function_name = terraform_output["tiingo_fetcher_name"]["value"]
     region = terraform_output["region"]["value"]
 

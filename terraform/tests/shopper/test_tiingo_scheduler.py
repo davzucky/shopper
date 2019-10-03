@@ -6,34 +6,19 @@ import boto3
 import botostubs
 import pytest
 
-#
-# @pytest.fixture(scope="function")
-# def clean_aws_sqs(terraform_output):
-#     sqs_queue_name = terraform_output["sqs_queue_name"]["value"]
-#     region = terraform_output["region"]["value"]
-#     sqs = boto3.resource("sqs", region_name=region)  # type: botostubs.SQS
-#     queue = sqs.get_queue_by_name(QueueName=sqs_queue_name)
-#     queue.purge()
-#     yield
-from shared.aws_helpers import get_matching_s3_keys
+from .aws_helpers import get_matching_s3_keys
+from .share import lambda_function_check_setup, lambda_function_setup_contain_env_var
 
 
 def test_tiingo_scheduler_lambda_python_setup(version, environment, terraform_output):
     lambda_function_name = terraform_output["tiingo_scheduler_name"]["value"]
     region = terraform_output["region"]["value"]
-
-    client = boto3.client("lambda", region_name=region)
-    lambda_configuration = client.get_function_configuration(
-        FunctionName=lambda_function_name
-    )
-
-    assert lambda_function_name == f"tiingo_scheduler_{environment}"
-    assert lambda_configuration["Runtime"] == "python3.7"
-    assert lambda_configuration["Timeout"] == 300
+    expected_timeout = 300
+    lambda_function_check_setup(lambda_function_name, region, expected_timeout)
 
 
 @pytest.mark.parametrize(
-    "env_var_name",
+    "env_var",
     [
         ("AWS_S3_BUCKET"),
         ("TIINGO_FETCHER_FUNCTION_NAME"),
@@ -42,17 +27,12 @@ def test_tiingo_scheduler_lambda_python_setup(version, environment, terraform_ou
     ],
 )
 def test_tiingo_scheduler_env_var_exist(
-    version, environment, terraform_output, env_var_name
+    version, environment, terraform_output, env_var
 ):
     lambda_function_name = terraform_output["tiingo_scheduler_name"]["value"]
     region = terraform_output["region"]["value"]
 
-    client = boto3.client("lambda", region_name=region)
-    lambda_configuration = client.get_function_configuration(
-        FunctionName=lambda_function_name
-    )
-
-    assert env_var_name in lambda_configuration["Environment"]["Variables"]
+    lambda_function_setup_contain_env_var(lambda_function_name, region, env_var)
 
 
 @pytest.mark.parametrize(
@@ -67,7 +47,7 @@ def test_tiingo_scheduler_env_var_exist(
 def test_target_has_right_param_for_rule(
     terraform_output, environment, event_rule: str, json_param: str
 ):
-    lambda_function_arn = terraform_output["tiingo_scheduler_name"]["value"]
+    lambda_function_arn = terraform_output["tiingo_scheduler_arn"]["value"]
     region = terraform_output["region"]["value"]
     events_client = boto3.client("events", region_name=region)  # type: botostubs.Events
     targets = events_client.list_targets_by_rule(Rule=f"{event_rule}_{environment}")
@@ -116,16 +96,18 @@ def test_lambda_trigger_is_sqs(
     s3_bucket_name = terraform_output["s3_bucket_name"]["value"]
     base_path = "market_data_tiingo_scheduler"
 
-    event = {"base_path": base_path, "filters": json.load(json_filter)}
+    event = {"base_path": base_path, "filters": json.loads(json_filter)}
 
     payload = json.dumps(event)
 
     client_lambda = boto3.client("lambda", region_name=region)
     invoke_result = client_lambda.invoke(
-        FunctionName=lambda_function_arn, InvocationType="Event", Payload=payload
+        FunctionName=lambda_function_arn,
+        InvocationType="RequestResponse",
+        Payload=payload,
     )
 
-    assert invoke_result["StatusCode"] == 200
+    assert 200 == invoke_result["StatusCode"]
 
     start_time = datetime.now()
     max_wait_time_s = 240
