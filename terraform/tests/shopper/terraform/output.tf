@@ -14,10 +14,10 @@ output "tiingo_fetcher_arn" {
   value = module.shopper.tiingo_fetcher_arn
 }
 
-output "tiingo_scheduller_name" {
+output "tiingo_scheduler_name" {
   value = module.shopper.tiingo_scheduler_name
 }
 
-output "tiingo_scheduller_arn" {
+output "tiingo_scheduler_arn" {
   value = module.shopper.tiingo_scheduler_arn
 }
