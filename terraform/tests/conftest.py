@@ -47,7 +47,7 @@ def version() -> str:
     return "{}.{}".format(base_version, get_git_commit_hash())
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def environment(version) -> str:
     global run_id
     run_id += 1
