@@ -1,5 +1,5 @@
 locals {
-  tiingo_ticker_file_path = "static/tinngo_tickers.csv"
+  tiingo_ticker_file_path = var.tiingo_tickers_file_path
   share_variable = {
     version      = var.module_version
     environment  = var.environment
