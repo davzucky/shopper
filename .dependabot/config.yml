@@ -1,0 +1,26 @@
+version: 1
+
+update_configs:
+  - package_manager: "python"
+    directory: "/lambda/python/tiingo_fetcher"
+    update_schedule: "live"
+
+  - package_manager: "python"
+    directory: "/lambda/python/tiingo_scheduler"
+    update_schedule: "live"
+
+  - package_manager: "python"
+    directory: "/shared"
+    update_schedule: "live"
+
+  - package_manager: "python"
+    directory: "/terraform/test"
+    update_schedule: "live"
+
+  - package_manager: "terraform"
+    directory: "/terraform/shopper"
+    update_schedule: "live"
+
+  - package_manager: "terraform"
+    directory: "/terraform/test/shopper/terraform"
+    update_schedule: "live"
