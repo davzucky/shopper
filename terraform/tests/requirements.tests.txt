@@ -1,5 +1,5 @@
 boto3==1.9.180
-tiingo==0.10.0
+tiingo==0.11.0
 dataclasses-json==0.3.4
 python_terraform==0.10.1
 botostubs==0.11.1.9.243
