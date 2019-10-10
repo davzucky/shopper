@@ -118,11 +118,7 @@ venv.bak/
 bin/
 
 # project report files
-#**/pytest.report.html
 **/requirements.*.freeze*
-#**/requirements.freeze.txt
-#**/requirements.pkg.freeze.txt
-
 /requirements.functions.txt
 /requirements.pkg.freeze.awscli.txt
 
@@ -138,3 +134,4 @@ terraform/**/variable.version.tf
 .terraform.tfstate.lock.info
 *.tfstate
 *.tfstate.backup
+linter.json
