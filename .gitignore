@@ -135,3 +135,4 @@ variable.version.tf
 *.tfstate
 *.tfstate.backup
 linter.json
+results/
