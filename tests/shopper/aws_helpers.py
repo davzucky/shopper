@@ -1,1 +1,1 @@
-../../../shared/aws_helpers.py
+../../shared/aws_helpers.py

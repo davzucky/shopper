@@ -1,1 +1,1 @@
-../../../shared/message.py
+../../shared/message.py
