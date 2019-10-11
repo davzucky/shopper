@@ -14,13 +14,13 @@ update_configs:
     update_schedule: "daily"
 
   - package_manager: "python"
-    directory: "/terraform/tests"
+    directory: "/tests"
     update_schedule: "daily"
 
   - package_manager: "terraform"
-    directory: "/terraform/shopper"
+    directory: "/"
     update_schedule: "daily"
 
   - package_manager: "terraform"
-    directory: "/terraform/test/shopper/terraform"
+    directory: "/test/shopper/terraform"
     update_schedule: "daily"

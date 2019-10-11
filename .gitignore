@@ -129,7 +129,7 @@ bin/
 
 # Exclude package requirement
 **/packages
-terraform/**/variable.version.tf
+variable.version.tf
 /**/.terraform/
 .terraform.tfstate.lock.info
 *.tfstate

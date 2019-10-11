@@ -20,7 +20,7 @@ resource "aws_s3_bucket_object" "tickers" {
 }
 
 module "shopper" {
-  source                   = "../../../shopper"
+  source                   = "../../../"
   tiingo_tickers_file_path = aws_s3_bucket_object.tickers.key
   loging_level             = "DEBUG"
   environment              = var.environment

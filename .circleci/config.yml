@@ -46,8 +46,8 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - ./terraform/shopper/packages/*
-            - ./terraform/shopper/variable.version.tf
+            - ./packages/*
+            - ./variable.version.tf
 
   test-terraform-modules:
     executor: lambda-executor
@@ -104,12 +104,12 @@ workflows:
       - test-terraform-modules:
           requires:
             - build-lambda-packages
-      - create-terraform-package:
-          requires:
-            - test-terraform-modules
-          filters:
-            branches:
-              only: master
+#      - create-terraform-package:
+#          requires:
+#            - test-terraform-modules
+#          filters:
+#            branches:
+#              only: master
 
 #      - test-terraform-modules:
 #          requires:
