@@ -22,5 +22,5 @@ update_configs:
     update_schedule: "daily"
 
   - package_manager: "terraform"
-    directory: "/test/shopper/terraform"
+    directory: "/tests/shopper/terraform"
     update_schedule: "daily"
