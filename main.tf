@@ -1,3 +1,10 @@
+terraform {
+  required_version = ">= 0.12.6"
+  required_providers {
+    aws = "~> 2.8"
+  }
+}
+
 locals {
   tiingo_ticker_file_path = var.tiingo_tickers_file_path
   share_variable = {
