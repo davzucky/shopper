@@ -26,7 +26,7 @@ variable "shopper_global" {
     environment      = string
     loging_level     = string
     region           = string
-    S3_lambda_bucker = string
+    S3_lambda_bucket = string
   })
   description = "Shopper shared global variables"
 }
@@ -41,7 +41,7 @@ variable "tiingo_api_key" {
   description = "Tiingo API key to use"
 }
 
-variable "tiingo_tickers_file_path" {
+variable "tiingo_tickers_file_key" {
   type        = "string"
   description = "Tiingo path to the file containing the tickers"
   default     = "static/tiingo_tickers.csv"

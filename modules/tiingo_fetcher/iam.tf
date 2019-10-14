@@ -28,20 +28,20 @@ data "aws_iam_policy_document" "tiingo_fetcher_lambda" {
   statement {
     sid       = "AllowInvokingLambdas"
     effect    = "Allow"
-    resources = ["arn:aws:lambda:${var.share_variables.region}:*:function:*"]
+    resources = ["arn:aws:lambda:${var.shopper_global.region}:*:function:*"]
     actions   = ["lambda:InvokeFunction"]
   }
 
   statement {
     sid       = "AllowCreatingLogGroups"
     effect    = "Allow"
-    resources = ["arn:aws:logs:${var.share_variables.region}:*:*"]
+    resources = ["arn:aws:logs:${var.shopper_global.region}:*:*"]
     actions   = ["logs:CreateLogGroup"]
   }
   statement {
     sid       = "AllowWritingLogs"
     effect    = "Allow"
-    resources = ["arn:aws:logs:${var.share_variables.region}:*:log-group:/aws/lambda/*:*"]
+    resources = ["arn:aws:logs:${var.shopper_global.region}:*:log-group:/aws/lambda/*:*"]
 
     actions = [
       "logs:CreateLogStream",

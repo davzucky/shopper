@@ -1,10 +1,11 @@
 // Share Variables. This are variable that are usually common and shared
-variable "share_variables" {
+variable "shopper_global" {
   type = object({
-    version      = string
-    environment  = string
-    loging_level = string
-    region       = string
+    version          = string
+    environment      = string
+    loging_level     = string
+    region           = string
+    S3_lambda_bucket = string
   })
 }
 
