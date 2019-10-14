@@ -49,10 +49,8 @@ def version() -> str:
 
 @pytest.fixture(scope="session")
 def environment(version) -> str:
-    global run_id
-    run_id += 1
     environment = version.split(".")[-1]
-    return f"{environment}{run_id}"
+    return f"{environment}"
 
 
 @pytest.fixture(scope="session")
