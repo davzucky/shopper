@@ -3,7 +3,7 @@ variable "module_version" {
   description = "version of the module"
 }
 
-variable "s3_bucker_name" {
+variable "s3_bucket_name" {
   type        = "string"
   description = "Name of the s3 bucker used for the test"
 }

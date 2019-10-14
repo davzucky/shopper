@@ -19,7 +19,7 @@ def setup_terraform(
         "tiingo_api_key": os.environ.get("TIINGO_API_KEY"),
         "aws_region": aws_region,
         "environment": environment,
-        "s3_bucker_name": s3_bucket_name,
+        "s3_bucket_name": s3_bucket_name,
     }
 
     tf.init()
