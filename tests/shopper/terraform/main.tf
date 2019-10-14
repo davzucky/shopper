@@ -25,19 +25,19 @@ resource "aws_s3_bucket_object" "tickers" {
 resource "aws_s3_bucket_object" "tiingo_fetcher_lambda_package" {
   bucket = aws_s3_bucket.test_tiingo.bucket
   key    = "lambda/tiingo_fetcher/${var.environment}/package.zip"
-  source = "${path.module}/../../../packages/tiingo_fetcher.${var.environment}.zip"
+  source = "${path.module}/../../../packages/tiingo_fetcher.${var.module_version}.zip"
 }
 
 resource "aws_s3_bucket_object" "tiingo_scheduler_lambda_package" {
   bucket = aws_s3_bucket.test_tiingo.bucket
   key    = "lambda/tiingo_scheduler/${var.environment}/package.zip"
-  source = "${path.module}/../../../packages/tiingo_scheduler.${var.environment}.zip"
+  source = "${path.module}/../../../packages/tiingo_scheduler.${var.module_version}.zip"
 }
 
 module "shopper" {
   source = "../../../"
   shopper_global = {
-    version          = var.environment
+    version          = var.module_version
     environment      = var.environment
     region           = var.aws_region
     loging_level     = "DEBUG"
