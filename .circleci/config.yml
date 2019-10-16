@@ -67,6 +67,17 @@ jobs:
           paths:
             - ./results/terraform_test/*
 
+  copy-lambda-package-s3:
+    executor: lambda-executor
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: copy package to S3
+          command: |
+            make aws/publish-lambda-packages-S3
+
+
   create-terraform-package:
     executor: lambda-executor
     steps:
@@ -104,6 +115,12 @@ workflows:
       - test-terraform-modules:
           requires:
             - build-lambda-packages
+      - copy-lambda-package-s3:
+          requires:
+            - test-terraform-modules
+#          filters:
+#            tags:
+#              only: /.*/
 #      - create-terraform-package:
 #          requires:
 #            - test-terraform-modules
