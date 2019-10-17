@@ -77,7 +77,7 @@ jobs:
           name: copy package to S3
           command:
             - export GIT_TAG=${CIRCLE_TAG}
-            make aws/publish-lambda-tagged-packages-S3
+            - make aws/publish-lambda-tagged-packages-S3
 
 
 #  create-terraform-package:
