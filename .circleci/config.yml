@@ -75,35 +75,36 @@ jobs:
           at: .
       - run:
           name: copy package to S3
-          command: |
-            make aws/publish-lambda-packages-S3
+          command:
+            - export GIT_TAG=${CIRCLE_TAG}
+            make aws/publish-lambda-tagged-packages-S3
 
 
-  create-terraform-package:
-    executor: lambda-executor
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: create terraform package
-          command: |
-            make terraform/create-package TERRAFORM_OUTPUT_PACKAGE=./terraform_module
-      - persist_to_workspace:
-          root: .
-          paths:
-            - ./terraform_module/
-      - store_artifacts:
-          path: ./terraform_module
-
-  push-terraform-module-to-s3:
-    executor: lambda-executor
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Check package content
-          command: |
-            make --trace publish-packages-to-s3
+#  create-terraform-package:
+#    executor: lambda-executor
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - run:
+#          name: create terraform package
+#          command: |
+#            make terraform/create-package TERRAFORM_OUTPUT_PACKAGE=./terraform_module
+#      - persist_to_workspace:
+#          root: .
+#          paths:
+#            - ./terraform_module/
+#      - store_artifacts:
+#          path: ./terraform_module
+#
+#  push-terraform-module-to-s3:
+#    executor: lambda-executor
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - run:
+#          name: Check package content
+#          command: |
+#            make --trace publish-packages-to-s3
 
 workflows:
   version: 2
@@ -119,9 +120,11 @@ workflows:
       - copy-lambda-package-s3:
           requires:
             - test-terraform-modules
-#          filters:
-#            tags:
-#              only: /.*/
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^\d+\.\d+\.\d+$/
 #      - create-terraform-package:
 #          requires:
 #            - test-terraform-modules
