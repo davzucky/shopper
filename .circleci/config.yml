@@ -110,13 +110,22 @@ workflows:
   version: 2
   test local venv:
     jobs:
-      - test-python-lambdas
+      - test-python-lambdas:
+          filters:
+            - tags:
+                only: /.*/
       - build-lambda-packages:
           requires:
             - test-python-lambdas
+          filters:
+            - tags:
+                only: /.*/
       - test-terraform-modules:
           requires:
             - build-lambda-packages
+          filters:
+            - tags:
+                only: /.*/
       - copy-lambda-package-s3:
           requires:
             - test-terraform-modules
