@@ -90,36 +90,43 @@ workflows:
       - test-terraform-modules:
           requires:
             - build-lambda-packages
-      - copy-lambda-package-s3:
-          requires:
-            - test-terraform-modules
-          filters:
-            tags:
-              only: /^\d+\.\d+\.\d+$/
-            branches:
-              ignore: /.*/
-#  Tagged build:
-#    jobs:
-#      - test-python-lambdas:
-#          filters:
-#            tags:
-#              only: /^\d+\.\d+\.\d+$/
-#      - build-lambda-packages:
-#          requires:
-#            - test-python-lambdas
-#          filters:
-#            tags:
-#              only: /^\d+\.\d+\.\d+$/
-#      - test-terraform-modules:
-#          requires:
-#            - build-lambda-packages
-#          filters:
-#            tags:
-#              only: /^\d+\.\d+\.\d+$/
 #      - copy-lambda-package-s3:
 #          requires:
 #            - test-terraform-modules
 #          filters:
 #            tags:
 #              only: /^\d+\.\d+\.\d+$/
-
+#            branches:
+#              ignore: /.*/
+  Tagged build:
+    jobs:
+      - test-python-lambdas:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - build-lambda-packages:
+          requires:
+            - test-python-lambdas
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - test-terraform-modules:
+          requires:
+            - build-lambda-packages
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - copy-lambda-package-s3:
+          requires:
+            - test-terraform-modules
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
