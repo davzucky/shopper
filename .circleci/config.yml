@@ -6,10 +6,19 @@ executors:
 #    working_directory: /tmp
 
 jobs:
+  check-git-tag:
+    executor: lambda-executor
+    steps:
+      - checkout
+      - run:
+          name: "Check git tag"
+          command: |
+            export VERSION=${grep version config.toml | cut -d'"' -f2}
+            if [ ${CIRCLE_TAG} !=  ${VERSION} ]; then echo "Git tag ${CIRCLE_TAG} is different than the app version  ${VERSION}"; exit 1; fi
+
+
   test-python-lambdas:
     executor: lambda-executor
-    #    docker:
-    #      - image: circleci/python:3.7.2
     steps:
       - checkout
       - run:
@@ -90,17 +99,17 @@ workflows:
       - test-terraform-modules:
           requires:
             - build-lambda-packages
-#      - copy-lambda-package-s3:
-#          requires:
-#            - test-terraform-modules
-#          filters:
-#            tags:
-#              only: /^\d+\.\d+\.\d+$/
-#            branches:
-#              ignore: /.*/
   Tagged build:
     jobs:
+      - check-git-tag:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
       - test-python-lambdas:
+          requires:
+            - check-git-tag
           filters:
             branches:
               ignore: /.*/
@@ -124,7 +133,7 @@ workflows:
               only: /^\d+\.\d+\.\d+$/
       - copy-lambda-package-s3:
           requires:
-            - test-terraform-modules
+            - build-lambda-packages
           filters:
             branches:
               ignore: /.*/
