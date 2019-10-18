@@ -79,36 +79,9 @@ jobs:
             export GIT_TAG=${CIRCLE_TAG}
             make aws/publish-lambda-tagged-packages-S3
 
-
-#  create-terraform-package:
-#    executor: lambda-executor
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - run:
-#          name: create terraform package
-#          command: |
-#            make terraform/create-package TERRAFORM_OUTPUT_PACKAGE=./terraform_module
-#      - persist_to_workspace:
-#          root: .
-#          paths:
-#            - ./terraform_module/
-#      - store_artifacts:
-#          path: ./terraform_module
-#
-#  push-terraform-module-to-s3:
-#    executor: lambda-executor
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - run:
-#          name: Check package content
-#          command: |
-#            make --trace publish-packages-to-s3
-
 workflows:
   version: 2
-  test local venv:
+  Every build:
     jobs:
       - test-python-lambdas
       - build-lambda-packages:
@@ -120,26 +93,29 @@ workflows:
       - copy-lambda-package-s3:
           requires:
             - test-terraform-modules
+
+  Tagged build:
+    jobs:
+      - test-python-lambdas:
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
-#      - create-terraform-package:
-#          requires:
-#            - test-terraform-modules
-#          filters:
-#            branches:
-#              only: master
+      - build-lambda-packages:
+          requires:
+            - test-python-lambdas
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - test-terraform-modules:
+          requires:
+            - build-lambda-packages
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - copy-lambda-package-s3:
+          requires:
+            - test-terraform-modules
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
 
-#      - test-terraform-modules:
-#          requires:
-#            - build-lambda-packages
-#      - push-terraform-module-to-s3:
-#          requires:
-#            - create-terraform-package
-#          filters:
-#            branches:
-#              only: master
-
-#      - push-lambda-packages-to-s3:
-#          requires:
-#            - build-lambda-packages
