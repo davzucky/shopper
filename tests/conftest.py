@@ -4,7 +4,6 @@ import subprocess
 import pytest
 import toml
 
-
 aws_regions = [
     "eu-west-1",
     "eu-west-2",
@@ -32,8 +31,8 @@ def pytest_collection_modifyitems(items):
 def get_git_commit_hash() -> str:
     return (
         subprocess.check_output(["git", "describe", "--always"])
-        .decode("utf-8")
-        .strip("\n")
+            .decode("utf-8")
+            .strip("\n")
     )
 
 
@@ -44,7 +43,9 @@ def version() -> str:
     )
     config = toml.load(full_path)
     base_version = config["version"]
-    return "{}.{}".format(base_version, get_git_commit_hash())
+
+    return os.environ.get("CIRCLE_TAG",
+                          "{}.{}".format(base_version, get_git_commit_hash()))
 
 
 @pytest.fixture(scope="session")
