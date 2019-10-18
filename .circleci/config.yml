@@ -13,7 +13,7 @@ jobs:
       - run:
           name: "Check git tag"
           command: |
-            export VERSION=${grep version config.toml | cut -d'"' -f2}
+            export VERSION=$(grep version config.toml | cut -d'"' -f2)
             if [ ${CIRCLE_TAG} !=  ${VERSION} ]; then echo "Git tag ${CIRCLE_TAG} is different than the app version  ${VERSION}"; exit 1; fi
 
 
