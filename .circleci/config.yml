@@ -90,15 +90,6 @@ workflows:
   version: 2
   Every build:
     jobs:
-      - test-python-lambdas
-      - build-lambda-packages:
-          requires:
-            - test-python-lambdas
-      - test-terraform-modules:
-          requires:
-            - build-lambda-packages
-  Tagged build:
-    jobs:
       - check-git-tag:
           filters:
             branches:
@@ -108,27 +99,21 @@ workflows:
       - test-python-lambdas:
           requires:
             - check-git-tag
-          filters:
-            branches:
-              ignore: /.*/
+          filters:  # required since `deploy` has tag filters AND requires `build`
             tags:
-              only: /^\d+\.\d+\.\d+$/
+              only: /.*/
       - build-lambda-packages:
           requires:
             - test-python-lambdas
-          filters:
-            branches:
-              ignore: /.*/
+          filters:  # required since `deploy` has tag filters AND requires `build`
             tags:
-              only: /^\d+\.\d+\.\d+$/
+              only: /.*/
       - test-terraform-modules:
           requires:
             - build-lambda-packages
-          filters:
-            branches:
-              ignore: /.*/
+          filters:  # required since `deploy` has tag filters AND requires `build`
             tags:
-              only: /^\d+\.\d+\.\d+$/
+              only: /.*/
       - copy-lambda-package-s3:
           requires:
             - test-terraform-modules
@@ -137,3 +122,43 @@ workflows:
               ignore: /.*/
             tags:
               only: /^\d+\.\d+\.\d+$/
+#  Tagged build:
+#    jobs:
+#      - check-git-tag:
+#          filters:
+#            branches:
+#              ignore: /.*/
+#            tags:
+#              only: /^\d+\.\d+\.\d+$/
+#      - test-python-lambdas:
+#          requires:
+#            - check-git-tag
+#          filters:
+#            branches:
+#              ignore: /.*/
+#            tags:
+#              only: /^\d+\.\d+\.\d+$/
+#      - build-lambda-packages:
+#          requires:
+#            - test-python-lambdas
+#          filters:
+#            branches:
+#              ignore: /.*/
+#            tags:
+#              only: /^\d+\.\d+\.\d+$/
+#      - test-terraform-modules:
+#          requires:
+#            - build-lambda-packages
+#          filters:
+#            branches:
+#              ignore: /.*/
+#            tags:
+#              only: /^\d+\.\d+\.\d+$/
+#      - copy-lambda-package-s3:
+#          requires:
+#            - test-terraform-modules
+#          filters:
+#            branches:
+#              ignore: /.*/
+#            tags:
+#              only: /^\d+\.\d+\.\d+$/
