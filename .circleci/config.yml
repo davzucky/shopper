@@ -57,7 +57,6 @@ jobs:
           paths:
             - ./virtualenvs/**
             - ./packages/*
-            - ./variable.version.tf
 
   test-terraform-modules:
     executor: lambda-executor
@@ -85,8 +84,7 @@ jobs:
       - run:
           name: copy package to S3
           command: |
-            export GIT_TAG=${CIRCLE_TAG}
-            make aws/publish-lambda-tagged-packages-S3
+            make aws/publish-lambda-tagged-packages-S3 GIT_TAG=${CIRCLE_TAG}
 
 workflows:
   version: 2
@@ -133,7 +131,7 @@ workflows:
               only: /^\d+\.\d+\.\d+$/
       - copy-lambda-package-s3:
           requires:
-            - build-lambda-packages
+            - test-terraform-modules
           filters:
             branches:
               ignore: /.*/
