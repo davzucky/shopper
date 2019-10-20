@@ -31,8 +31,8 @@ def pytest_collection_modifyitems(items):
 def get_git_commit_hash() -> str:
     return (
         subprocess.check_output(["git", "describe", "--always"])
-            .decode("utf-8")
-            .strip("\n")
+        .decode("utf-8")
+        .strip("\n")
     )
 
 
@@ -44,8 +44,9 @@ def version() -> str:
     config = toml.load(full_path)
     base_version = config["version"]
 
-    return os.environ.get("CIRCLE_TAG",
-                          "{}.{}".format(base_version, get_git_commit_hash()))
+    return os.environ.get(
+        "CIRCLE_TAG", "{}.{}".format(base_version, get_git_commit_hash())
+    )
 
 
 @pytest.fixture(scope="session")
@@ -64,6 +65,4 @@ def aws_region(version) -> str:
 
 @pytest.fixture(scope="session")
 def terraform_bin_path() -> str:
-    return os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "../bin/terraform"
-    )
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "../bin/terraform")
