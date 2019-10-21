@@ -125,7 +125,7 @@ workflows:
               only: /^\d+\.\d+\.\d+$/
       - copy-lambda-package-s3:
           requires:
-            - test-terraform-modules
+            - check-git-tag
           filters:
             branches:
               ignore: /.*/
