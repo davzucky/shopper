@@ -1,5 +1,5 @@
 name = "shopper"
-version = "0.1.16"
+version = "0.1.17"
 
 S3_bucket_uri = "s3://hw-modules-store"
 S3_folder_path = "modules"
