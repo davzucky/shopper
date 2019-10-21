@@ -30,6 +30,7 @@ jobs:
       - run:
           name: run tests local venv
           command: |
+            if [ -z "$ CIRCLE_TAG" ]; then export VERSION=${CIRCLE_TAG}; fi
             make python/lambda/test-all
           environment:
             AWS_SECRET_ACCESS_KEY: "This_is_a_key"
@@ -52,6 +53,7 @@ jobs:
       - run:
           name: build lambda packages
           command: |
+            if [ -z "$ CIRCLE_TAG" ]; then export VERSION=${CIRCLE_TAG}; fi
             make python/lambda/create-package
       - persist_to_workspace:
           root: .
@@ -67,6 +69,7 @@ jobs:
       - run:
           name: test terraform modules
           command: |
+            if [ -z "$ CIRCLE_TAG" ]; then export VERSION=${CIRCLE_TAG}; fi
             make terraform/test
       - store_test_results:
           path: ./results/terraform_test
@@ -85,77 +88,57 @@ jobs:
       - run:
           name: copy package to S3
           command: |
-            make aws/publish-lambda-tagged-packages-S3 GIT_TAG=${CIRCLE_TAG}
+            export VERSION=${CIRCLE_TAG}
+            make aws/publish-lambda-packages-S3
 
 workflows:
   version: 2
   Every build:
     jobs:
-      - check-git-tag:
-          filters:
-            tags:
-              only: /.*/
-      - test-python-lambdas:
-          requires:
-            - check-git-tag
-          filters:  # required since `deploy` has tag filters AND requires `build`
-            tags:
-              only: /.*/
+      - test-python-lambdas
       - build-lambda-packages:
           requires:
             - test-python-lambdas
-          filters:  # required since `deploy` has tag filters AND requires `build`
-            tags:
-              only: /.*/
       - test-terraform-modules:
           requires:
             - build-lambda-packages
-          filters:  # required since `deploy` has tag filters AND requires `build`
+  Tagged build:
+    jobs:
+      - check-git-tag:
+          filters:
+            branches:
+              ignore: /.*/
             tags:
-              only: /.*/
+              only: /^\d+\.\d+\.\d+$/
+      - test-python-lambdas:
+          requires:
+            - check-git-tag
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - build-lambda-packages:
+          requires:
+            - test-python-lambdas
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - test-terraform-modules:
+          requires:
+            - build-lambda-packages
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
       - copy-lambda-package-s3:
           requires:
             - test-terraform-modules
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^\d+\.\d+\.\d+$/
-#  Tagged build:
-#    jobs:
-#      - check-git-tag:
-#          filters:
-#            branches:
-#              ignore: /.*/
-#            tags:
-#              only: /^\d+\.\d+\.\d+$/
-#      - test-python-lambdas:
-#          requires:
-#            - check-git-tag
-#          filters:
-#            branches:
-#              ignore: /.*/
-#            tags:
-#              only: /^\d+\.\d+\.\d+$/
-#      - build-lambda-packages:
-#          requires:
-#            - test-python-lambdas
-#          filters:
-#            branches:
-#              ignore: /.*/
-#            tags:
-#              only: /^\d+\.\d+\.\d+$/
-#      - test-terraform-modules:
-#          requires:
-#            - build-lambda-packages
-#          filters:
-#            branches:
-#              ignore: /.*/
-#            tags:
-#              only: /^\d+\.\d+\.\d+$/
-#      - copy-lambda-package-s3:
-#          requires:
-#            - test-terraform-modules
-#          filters:
-#            branches:
-#              ignore: /.*/
-#            tags:
-#              only: /^\d+\.\d+\.\d+$/
