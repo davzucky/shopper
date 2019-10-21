@@ -97,7 +97,7 @@ jobs:
             alias rename=rename.ul
             cd packages
             export GIT_SHORT_SHA1=$(echo ${CIRCLE_SHA1} | cut -b1-7)
-            rename .$(GIT_SHORT_SHA1} '' *.zip
+            rename .${GIT_SHORT_SHA1} '' *.zip
             ls -ali
             cd -
       - run:
