@@ -2,7 +2,7 @@ version: 2.1
 executors:
   lambda-executor:
     docker:
-      - image: circleci/python:3.7.2
+      - image: circleci/python:3.7.4-buster
 #    working_directory: /tmp
 
 jobs:
@@ -94,8 +94,10 @@ jobs:
       - run:
           name: Rename revision package to tagged build
           command: |
+            alias rename=rename.ul
             cd packages
-            rename .$(CIRCLE_SHA1} '' *.zip
+            export GIT_SHORT_SHA1=$(echo ${CIRCLE_SHA1} | cut -b1-7)
+            rename .$(GIT_SHORT_SHA1} '' *.zip
             ls -ali
             cd -
       - run:
