@@ -63,7 +63,7 @@ jobs:
       - save_cache:
           key: package-shopper-{{ .Revision }}
           paths:
-            - ./packages/*
+            - ./packages
 
   test-terraform-modules:
     executor: lambda-executor
