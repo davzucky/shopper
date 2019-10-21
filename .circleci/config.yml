@@ -58,7 +58,11 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - ./virtualenvs/**
+            - ./virtualenvs/*
+            - ./packages/*
+      - save_cache:
+          key: package-shopper-{{ .Branch }}-{{ .Revision }}
+          paths:
             - ./packages/*
 
   test-terraform-modules:
@@ -83,8 +87,17 @@ jobs:
   copy-lambda-package-s3:
     executor: lambda-executor
     steps:
-      - attach_workspace:
-          at: .
+      - checkout
+      - restore_cache:
+          keys:
+            - package-shopper-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Rename revision package to tagged build
+          command: |
+            cd packages
+            rename .$(CIRCLE_SHA1} '' *.zip
+            ls -ali
+            cd -
       - run:
           name: copy package to S3
           command: |
@@ -105,30 +118,6 @@ workflows:
   Tagged build:
     jobs:
       - check-git-tag:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^\d+\.\d+\.\d+$/
-      - test-python-lambdas:
-          requires:
-            - check-git-tag
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^\d+\.\d+\.\d+$/
-      - build-lambda-packages:
-          requires:
-            - test-python-lambdas
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^\d+\.\d+\.\d+$/
-      - test-terraform-modules:
-          requires:
-            - build-lambda-packages
           filters:
             branches:
               ignore: /.*/
