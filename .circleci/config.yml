@@ -17,7 +17,6 @@ jobs:
             export VERSION=$(grep version config.toml | cut -d'"' -f2)
             if [ ${CIRCLE_TAG} !=  ${VERSION} ]; then echo "Git tag ${CIRCLE_TAG} is different than the app version  ${VERSION}"; exit 1; fi
 
-
   test-python-lambdas:
     executor: lambda-executor
     steps:
@@ -64,6 +63,7 @@ jobs:
           key: package-shopper-{{ .Revision }}
           paths:
             - ./packages
+            - ./virtualenvs
 
   test-terraform-modules:
     executor: lambda-executor
