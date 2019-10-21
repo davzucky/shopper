@@ -61,7 +61,7 @@ jobs:
             - ./virtualenvs/*
             - ./packages/*
       - save_cache:
-          key: package-shopper-{{ .Branch }}-{{ .Revision }}
+          key: package-shopper-{{ .Revision }}
           paths:
             - ./packages/*
 
@@ -90,7 +90,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - package-shopper-{{ .Branch }}-{{ .Revision }}
+            - package-shopper-{{ .Revision }}
       - run:
           name: Rename revision package to tagged build
           command: |
