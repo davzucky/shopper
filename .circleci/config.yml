@@ -13,6 +13,7 @@ jobs:
       - run:
           name: "Check git tag"
           command: |
+            if [ ! -z "$ CIRCLE_TAG" ]; then echo "No Build tag"; exit 0; fi
             export VERSION=$(grep version config.toml | cut -d'"' -f2)
             if [ ${CIRCLE_TAG} !=  ${VERSION} ]; then echo "Git tag ${CIRCLE_TAG} is different than the app version  ${VERSION}"; exit 1; fi
 
@@ -92,10 +93,8 @@ workflows:
     jobs:
       - check-git-tag:
           filters:
-            branches:
-              ignore: /.*/
             tags:
-              only: /^\d+\.\d+\.\d+$/
+              only: /.*/
       - test-python-lambdas:
           requires:
             - check-git-tag
@@ -118,8 +117,6 @@ workflows:
           requires:
             - test-terraform-modules
           filters:
-            branches:
-              ignore: /.*/
             tags:
               only: /^\d+\.\d+\.\d+$/
 #  Tagged build:
