@@ -58,7 +58,7 @@ resource "aws_cloudwatch_event_target" "run_tiingo_scheduler_Every_day_HK_8pm" {
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_tiingo_scheduler" {
   for_each = local.tiingo_scheduler_cron_setup
 
-  statement_id  = "AllowExecutionFromCloudWatch"
+  statement_id  = "AllowExecutionFromCloudWatch_${each.key}"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.tiingo_scheduler_lambda_function.function_name
   principal     = "events.amazonaws.com"
