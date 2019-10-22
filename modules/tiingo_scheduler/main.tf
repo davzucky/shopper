@@ -4,14 +4,14 @@ locals {
 }
 
 resource "aws_lambda_function" "tiingo_scheduler_lambda_function" {
-  function_name    = lower(terraform.workspace) == "prod" ? local.module_name : "${local.module_name}_${var.shopper_global.environment}"
-  handler          = "${local.module_name}.handler.handler"
-  s3_bucket        = var.shopper_global.S3_lambda_bucket
-  s3_key           = local.zip_file_path
-  role             = aws_iam_role.tiingo_scheduler_lambda.arn
-  runtime          = "python3.7"
-//  source_code_hash = filebase64sha256(local.zip_file_path)
-  timeout          = "300"
+  function_name = lower(terraform.workspace) == "prod" ? local.module_name : "${local.module_name}_${var.shopper_global.environment}"
+  handler       = "${local.module_name}.handler.handler"
+  s3_bucket     = var.S3_lambda_bucket
+  s3_key        = local.zip_file_path
+  role          = aws_iam_role.tiingo_scheduler_lambda.arn
+  runtime       = "python3.7"
+  //  source_code_hash = filebase64sha256(local.zip_file_path)
+  timeout = "300"
 
   environment {
     variables = {
