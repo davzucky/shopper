@@ -23,7 +23,6 @@ def s3_base_path():
 @pytest.fixture(scope="function")
 def clean_aws_resources(terraform_output, s3_base_path, s3_bucket_name):
     region = terraform_output["region"]["value"]
-    # bucket_name = terraform_output["s3_bucket_name"]["value"]
 
     s3 = boto3.resource("s3", region_name=region)  # type: botostubs.S3
     bucket = s3.Bucket(s3_bucket_name)
