@@ -49,7 +49,7 @@ def test_target_has_right_param_for_rule(
 ):
     lambda_function_arn = terraform_output["tiingo_scheduler_arn"]["value"]
     region = terraform_output["region"]["value"]
-    events_client = boto3.client("events", region_name=region)  # type: botostubs.Events
+    events_client = boto3.client("events", region_name=region)
     targets = events_client.list_targets_by_rule(Rule=f"{event_rule}_{environment}")
 
     assert len(targets["Targets"]) == 1
