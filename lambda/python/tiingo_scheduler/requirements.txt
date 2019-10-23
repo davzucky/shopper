@@ -3,4 +3,3 @@ dataclasses-json==0.3.5
 dataclass-csv==1.1.2
 daiquiri==1.6.0
 more-itertools==7.2.0
-botostubs==0.11.1.9.253
