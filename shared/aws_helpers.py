@@ -1,5 +1,6 @@
 import boto3
 import daiquiri
+import botostubs
 from botocore.exceptions import ClientError
 
 logger = daiquiri.getLogger(__name__)
@@ -15,8 +16,8 @@ def get_matching_s3_objects(bucket, prefix="", suffix=""):
     :param suffix: Only fetch objects whose keys end with
         this suffix (optional).
     """
-    s3 = boto3.client("s3")
-    paginator = s3.get_paginator("list_objects_v2")
+    s3 = boto3.client("s3")  # type: botostubs.S3
+    paginator = s3.get_paginator("list_objects_v2")  # type: botostubs.Paginator
 
     kwargs = {"Bucket": bucket}
 
@@ -55,7 +56,7 @@ def get_matching_s3_keys(bucket, prefix="", suffix=""):
 
 
 def download_file_from_S3_to_temp(region_name, bucket_name, file_key, tmp_path) -> None:
-    s3 = boto3.resource("s3", region_name=region_name)
+    s3 = boto3.resource("s3", region_name=region_name)  # type: botostubs.S3.S3Resource
 
     try:
         logger.debug(
@@ -71,7 +72,8 @@ def download_file_from_S3_to_temp(region_name, bucket_name, file_key, tmp_path) 
 
 
 def upload_file_from_local_to_S3(region_name, bucket_name, file_key, tmp_path) -> None:
-    s3 = boto3.client("s3")
+    s3 = boto3.client("s3")  # type: botostubs.S3
+
     try:
         s3.upload_file(file_key, bucket_name, tmp_path)
     except ClientError as e:
