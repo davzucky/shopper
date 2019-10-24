@@ -3,7 +3,6 @@ import os
 import sys
 
 import boto3
-import botostubs
 import pytest
 
 from .aws_helpers import download_file_from_S3_to_temp
@@ -25,7 +24,7 @@ def clean_aws_resources(terraform_output, s3_base_path, s3_bucket_name):
     region = terraform_output["region"]["value"]
     # bucket_name = terraform_output["s3_bucket_name"]["value"]
 
-    s3 = boto3.resource("s3", region_name=region)  # type: botostubs.S3
+    s3 = boto3.resource("s3", region_name=region)
     bucket = s3.Bucket(s3_bucket_name)
 
     for key in bucket.objects.filter(Prefix=s3_base_path):
