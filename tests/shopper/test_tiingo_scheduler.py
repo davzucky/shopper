@@ -49,11 +49,12 @@ def test_target_has_right_param_for_rule(
     lambda_function_arn = terraform_output["tiingo_scheduler_arn"]["value"]
     region = terraform_output["region"]["value"]
     events_client = boto3.client("events", region_name=region)
-    targets = events_client.list_targets_by_rule(Rule=f"{event_rule}_{environment}")
+    targets = events_client.list_rule_names_by_target(TargetArn=lambda_function_arn)
 
-    assert len(targets["Targets"]) == 1
-    assert targets["Targets"][0]["Arn"] == lambda_function_arn
-    assert targets["Targets"][0]["Input"] == json_param
+    assert len(targets["RuleNames"]) == 5
+    #
+    # assert targets["Targets"][0]["Arn"] == lambda_function_arn
+    # assert targets["Targets"][0]["Input"] == json_param
 
 
 @pytest.mark.parametrize(
@@ -87,7 +88,7 @@ def test_target_has_right_param_for_rule(
         )
     ],
 )
-def test_lambda_trigger_is_sqs(
+def test_invoke_tiingo_scheduler(
     terraform_output, json_filter: str, expect_items: List[str]
 ):
     region = terraform_output["region"]["value"]

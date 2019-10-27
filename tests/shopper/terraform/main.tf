@@ -1,10 +1,10 @@
 terraform {
-  required_version = ">= 0.12.6"
+  required_version = ">= 0.12.9"
 }
 
 provider "aws" {
   region  = var.aws_region
-  version = "~> 2.0"
+  version = "~> 2.8"
 }
 
 resource "aws_s3_bucket" "test_tiingo" {
@@ -17,8 +17,8 @@ resource "aws_s3_bucket_object" "tickers" {
   bucket = aws_s3_bucket.test_tiingo.bucket
   key    = "static/tiingo_tickers.csv"
   source = "${path.module}/supported_tickers.csv"
-  depends_on  = [aws_s3_bucket_object.tiingo_scheduler_lambda_package,
-                 aws_s3_bucket_object.tiingo_fetcher_lambda_package]
+  depends_on = [aws_s3_bucket_object.tiingo_scheduler_lambda_package,
+  aws_s3_bucket_object.tiingo_fetcher_lambda_package]
 }
 
 resource "aws_s3_bucket_object" "tiingo_fetcher_lambda_package" {
@@ -44,6 +44,6 @@ module "shopper" {
   }
 
   tiingo_tickers_file_key = aws_s3_bucket_object.tickers.key
-  S3_market_data_bucket    = aws_s3_bucket_object.tickers.bucket
-  tiingo_api_key           = var.tiingo_api_key
+  S3_market_data_bucket   = aws_s3_bucket_object.tickers.bucket
+  tiingo_api_key          = var.tiingo_api_key
 }

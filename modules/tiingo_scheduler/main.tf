@@ -4,14 +4,14 @@ locals {
 }
 
 resource "aws_lambda_function" "tiingo_scheduler_lambda_function" {
-  function_name    = lower(terraform.workspace) == "prod" ? local.module_name : "${local.module_name}_${var.shopper_global.environment}"
-  handler          = "${local.module_name}.handler.handler"
-  s3_bucket        = var.shopper_global.S3_lambda_bucket
-  s3_key           = local.zip_file_path
-  role             = aws_iam_role.tiingo_scheduler_lambda.arn
-  runtime          = "python3.7"
-//  source_code_hash = filebase64sha256(local.zip_file_path)
-  timeout          = "300"
+  function_name = lower(terraform.workspace) == "prod" ? local.module_name : "${local.module_name}_${var.shopper_global.environment}"
+  handler       = "${local.module_name}.handler.handler"
+  s3_bucket     = var.shopper_global.S3_lambda_bucket
+  s3_key        = local.zip_file_path
+  role          = aws_iam_role.tiingo_scheduler_lambda.arn
+  runtime       = "python3.7"
+  //  source_code_hash = filebase64sha256(local.zip_file_path)
+  timeout = "300"
 
   environment {
     variables = {
@@ -24,23 +24,29 @@ resource "aws_lambda_function" "tiingo_scheduler_lambda_function" {
   }
 }
 
-resource "aws_cloudwatch_event_rule" "Every_day_HK_8pm" {
-  name                = lower(terraform.workspace) == "prod" ? "Monday_to_Friday_8pm_HKT" : "Monday_to_Friday_8pm_HKT_${var.shopper_global.environment}"
-  description         = "Monday to Friday 8pm HKT"
-  schedule_expression = "cron(0 12 ? * TUE-SAT *)"
+resource "aws_cloudwatch_event_rule" "tiingo_scheduler" {
+  for_each = var.tiingo_cron_setup
+
+  name = each.key
+  description         = each.key
+  schedule_expression = each.value.cron
 }
 
-resource "aws_cloudwatch_event_target" "run_tiingo_scheduler_Every_day_HK_8pm" {
-  rule      = aws_cloudwatch_event_rule.Every_day_HK_8pm.name
-  target_id = "Load_HK_Market_Data"
+resource "aws_cloudwatch_event_target" "tiingo_scheduler" {
+  for_each = var.tiingo_cron_setup
+
+  rule      = aws_cloudwatch_event_rule.tiingo_scheduler[each.key].name
+  target_id = "trigger_${each.key}"
   arn       = aws_lambda_function.tiingo_scheduler_lambda_function.arn
-  input     = "{\"filters\": [{\"exchange\": \"SHE\"}, {\"exchange\": \"SHG\"}]}"
+  input     = each.value.filter_input
 }
 
-resource "aws_lambda_permission" "allow_cloudwatch_to_call_tiingo_scheduler" {
-  statement_id  = "AllowExecutionFromCloudWatch"
+resource "aws_lambda_permission" "tiingo_scheduler" {
+  for_each = var.tiingo_cron_setup
+
+  statement_id  = "AllowExecutionFromCloudWatch_${each.key}"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.tiingo_scheduler_lambda_function.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.Every_day_HK_8pm.arn
+  source_arn    = aws_cloudwatch_event_rule.tiingo_scheduler[each.key].arn
 }

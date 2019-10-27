@@ -27,3 +27,8 @@ variable "tiingo_tickers_file_path" {
   default     = "static/tiingo_tickers.csv"
 }
 
+variable "tiingo_cron_setup" {
+  type        = "map"
+  description = "Tiingo cron setup"
+}
+

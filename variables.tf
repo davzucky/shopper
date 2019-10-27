@@ -47,3 +47,30 @@ variable "tiingo_tickers_file_key" {
   default     = "static/tiingo_tickers.csv"
 }
 
+variable "tiingo_cron_setup" {
+  type        = "map"
+  description = "Tiingo cron setup"
+  default = {
+    "SHEExchanges" = {
+      cron         = "cron(0 14 ? * MON-FRI *)"
+      filter_input = "{\"filters\": [{\"exchange\": \"SHE\"}]}"
+    }
+    "SHGExchanges" = {
+      cron         = "cron(30 14 ? * MON-FRI *)"
+      filter_input = "{\"filters\": [{\"exchange\": \"SHG\"}]}"
+    }
+    "NASDAQExchanges" = {
+      cron         = "cron(0 2 ? * TUE-SAT *)"
+      filter_input = "{\"filters\": [{\"exchange\": \"NASDAQ\"}]}"
+    }
+    "NYSEExchanges" = {
+      cron         = "cron(30 2 ? * TUE-SAT *)"
+      filter_input = "{\"filters\": [{\"exchange\": \"NYSE\"}]}"
+    }
+    "NYSEARCAExchanges" = {
+      cron         = "cron(0 4 ? * TUE-SAT *)"
+      filter_input = "{\"filters\": [{\"exchange\": \"NYSE ARCA\"}]}"
+    }
+  }
+}
+
