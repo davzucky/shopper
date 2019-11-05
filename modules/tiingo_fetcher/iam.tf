@@ -1,4 +1,9 @@
 resource "aws_iam_role" "tiingo_fetcher_lambda" {
+  tags = {
+    version = var.shopper_global.version
+    environment = var.shopper_global.environment
+  }
+
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -59,5 +64,4 @@ data "aws_iam_policy_document" "tiingo_fetcher_lambda" {
       "s3:*"
     ]
   }
-
 }

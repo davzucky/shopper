@@ -14,6 +14,7 @@ resource "aws_lambda_function" "tiingo_fetcher_lambda_function" {
   timeout = "300"
   tags = {
     version = var.shopper_global.version
+    environment = var.shopper_global.environment
   }
 
   environment {

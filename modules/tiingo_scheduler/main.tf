@@ -13,6 +13,11 @@ resource "aws_lambda_function" "tiingo_scheduler_lambda_function" {
   //  source_code_hash = filebase64sha256(local.zip_file_path)
   timeout = "300"
 
+  tags = {
+    version = var.shopper_global.version
+    environment = var.shopper_global.environment
+  }
+
   environment {
     variables = {
       "AWS_S3_BUCKET"                = var.s3_market_data_bucket
@@ -30,6 +35,10 @@ resource "aws_cloudwatch_event_rule" "tiingo_scheduler" {
   name = each.key
   description         = each.key
   schedule_expression = each.value.cron
+  tags = {
+    version = var.shopper_global.version
+    environment = var.shopper_global.environment
+  }
 }
 
 resource "aws_cloudwatch_event_target" "tiingo_scheduler" {
@@ -39,6 +48,10 @@ resource "aws_cloudwatch_event_target" "tiingo_scheduler" {
   target_id = "trigger_${each.key}"
   arn       = aws_lambda_function.tiingo_scheduler_lambda_function.arn
   input     = each.value.filter_input
+  tags = {
+    version = var.shopper_global.version
+    environment = var.shopper_global.environment
+  }
 }
 
 resource "aws_lambda_permission" "tiingo_scheduler" {
