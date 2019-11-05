@@ -6,14 +6,14 @@ locals {
 resource "aws_lambda_function" "tiingo_fetcher_lambda_function" {
   function_name = lower(terraform.workspace) == "prod" ? local.module_name : "${local.module_name}_${var.shopper_global.environment}"
   handler       = "tiingo_fetcher.handler.handler"
-  s3_bucket     = var.shopper_global.S3_lambda_bucket
+  s3_bucket     = var.s3_lambda_bucket
   s3_key        = local.zip_file_path
   role          = aws_iam_role.tiingo_fetcher_lambda.arn
   runtime       = "python3.7"
   //  source_code_hash = filebase64sha256(local.zip_file_path)
   timeout = "300"
   tags = {
-    version = var.shopper_global.version
+    version     = var.shopper_global.version
     environment = var.shopper_global.environment
   }
 

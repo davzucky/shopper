@@ -22,13 +22,18 @@
 
 variable "shopper_global" {
   type = object({
-    version          = string
-    environment      = string
-    loging_level     = string
-    region           = string
-    S3_lambda_bucket = string
+    version      = string
+    environment  = string
+    loging_level = string
+    region       = string
   })
   description = "Shopper shared global variables"
+}
+
+variable "s3_lambda_bucket" {
+  type        = "string"
+  description = "url of the s3 bucket that contain the lambda packages"
+  default     = "hyperwave-research-modules-store"
 }
 
 variable "S3_market_data_bucket" {

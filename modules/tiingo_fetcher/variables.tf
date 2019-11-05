@@ -1,12 +1,17 @@
 // Share Variables. This are variable that are usually common and shared
 variable "shopper_global" {
   type = object({
-    version          = string
-    environment      = string
-    loging_level     = string
-    region           = string
-    S3_lambda_bucket = string
+    version      = string
+    environment  = string
+    loging_level = string
+    region       = string
   })
+}
+
+variable "s3_lambda_bucket" {
+  type        = "string"
+  description = "url of the s3 bucket that contain the lambda packages"
+  default     = "s3://hyperwave-research-modules-store"
 }
 
 // Module specific variables

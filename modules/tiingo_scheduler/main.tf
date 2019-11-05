@@ -6,7 +6,7 @@ locals {
 resource "aws_lambda_function" "tiingo_scheduler_lambda_function" {
   function_name = lower(terraform.workspace) == "prod" ? local.module_name : "${local.module_name}_${var.shopper_global.environment}"
   handler       = "${local.module_name}.handler.handler"
-  s3_bucket     = var.shopper_global.S3_lambda_bucket
+  s3_bucket     = var.s3_lambda_bucket
   s3_key        = local.zip_file_path
   role          = aws_iam_role.tiingo_scheduler_lambda.arn
   runtime       = "python3.7"
@@ -14,7 +14,7 @@ resource "aws_lambda_function" "tiingo_scheduler_lambda_function" {
   timeout = "300"
 
   tags = {
-    version = var.shopper_global.version
+    version     = var.shopper_global.version
     environment = var.shopper_global.environment
   }
 
@@ -32,11 +32,11 @@ resource "aws_lambda_function" "tiingo_scheduler_lambda_function" {
 resource "aws_cloudwatch_event_rule" "tiingo_scheduler" {
   for_each = var.tiingo_cron_setup
 
-  name = each.key
+  name                = each.key
   description         = each.key
   schedule_expression = each.value.cron
   tags = {
-    version = var.shopper_global.version
+    version     = var.shopper_global.version
     environment = var.shopper_global.environment
   }
 }
@@ -48,10 +48,6 @@ resource "aws_cloudwatch_event_target" "tiingo_scheduler" {
   target_id = "trigger_${each.key}"
   arn       = aws_lambda_function.tiingo_scheduler_lambda_function.arn
   input     = each.value.filter_input
-  tags = {
-    version = var.shopper_global.version
-    environment = var.shopper_global.environment
-  }
 }
 
 resource "aws_lambda_permission" "tiingo_scheduler" {

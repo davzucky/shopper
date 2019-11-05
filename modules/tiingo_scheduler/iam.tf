@@ -1,6 +1,6 @@
 resource "aws_iam_role" "tiingo_scheduler_lambda" {
   tags = {
-    version = var.shopper_global.version
+    version     = var.shopper_global.version
     environment = var.shopper_global.environment
   }
   assume_role_policy = <<EOF

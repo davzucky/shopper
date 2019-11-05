@@ -1,6 +1,6 @@
 resource "aws_iam_role" "tiingo_fetcher_lambda" {
   tags = {
-    version = var.shopper_global.version
+    version     = var.shopper_global.version
     environment = var.shopper_global.environment
   }
 

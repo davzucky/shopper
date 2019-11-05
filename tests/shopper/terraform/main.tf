@@ -36,13 +36,14 @@ resource "aws_s3_bucket_object" "tiingo_scheduler_lambda_package" {
 module "shopper" {
   source = "../../../"
   shopper_global = {
-    version          = var.module_version
-    environment      = var.environment
-    region           = var.aws_region
-    loging_level     = "DEBUG"
-    S3_lambda_bucket = aws_s3_bucket.test_tiingo.bucket
+    version      = var.module_version
+    environment  = var.environment
+    region       = var.aws_region
+    loging_level = "DEBUG"
+
   }
 
+  S3_lambda_bucket        = aws_s3_bucket.test_tiingo.bucket
   tiingo_tickers_file_key = aws_s3_bucket_object.tickers.key
   S3_market_data_bucket   = aws_s3_bucket_object.tickers.bucket
   tiingo_api_key          = var.tiingo_api_key
