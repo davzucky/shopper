@@ -43,7 +43,7 @@ module "shopper" {
 
   }
 
-  S3_lambda_bucket        = aws_s3_bucket.test_tiingo.bucket
+  s3_lambda_bucket        = aws_s3_bucket_object.tiingo_scheduler_lambda_package.bucket
   tiingo_tickers_file_key = aws_s3_bucket_object.tickers.key
   S3_market_data_bucket   = aws_s3_bucket_object.tickers.bucket
   tiingo_api_key          = var.tiingo_api_key
