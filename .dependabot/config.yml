@@ -2,25 +2,29 @@ version: 1
 
 update_configs:
   - package_manager: "python"
+    directory: "/lambda/python/market_data_resample"
+    update_schedule: "weekly"
+
+  - package_manager: "python"
     directory: "/lambda/python/tiingo_fetcher"
-    update_schedule: "daily"
+    update_schedule: "weekly"
 
   - package_manager: "python"
     directory: "/lambda/python/tiingo_scheduler"
-    update_schedule: "daily"
+    update_schedule: "weekly"
 
   - package_manager: "python"
     directory: "/shared"
-    update_schedule: "daily"
+    update_schedule: "weekly"
 
   - package_manager: "python"
     directory: "/tests"
-    update_schedule: "daily"
+    update_schedule: "weekly"
 
   - package_manager: "terraform"
     directory: "/"
-    update_schedule: "daily"
+    update_schedule: "weekly"
 
   - package_manager: "terraform"
     directory: "/tests/shopper/terraform"
-    update_schedule: "daily"
+    update_schedule: "weekly"
