@@ -1,5 +1,5 @@
 boto3==1.10.19
-tiingo==0.12.0
+tiingo==0.13.0
 dataclasses-json==0.3.6
 python_terraform==0.10.1
 daiquiri==1.6.0
